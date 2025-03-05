@@ -8,11 +8,12 @@ const {
   register
 } = require("../controllers/authUserController");
 // const authMiddleware = require("../middleware/authMiddleware");
-const multer = require("multer");
+// const multer = require("multer");
 
 // Setup multer for file upload
-const storage = multer.memoryStorage(); // Store in memory or change to disk storage if needed
-const upload = multer({ storage });
+// const storage = multer.memoryStorage(); // Store in memory or change to disk storage if needed
+// const upload = multer({ storage });
+//  upload.single("profilePicture")
 const router = express.Router();
 const registerValidation = [
     check("userName", "Please include a valid userName"),
@@ -25,7 +26,7 @@ const registerValidation = [
     check("password", "Password is required").not().isEmpty(),
   ];
   
-  router.post("/register", registerValidation, upload.single("profilePicture"),(req, res) => {
+  router.post("/register", registerValidation,(req, res) => {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
       return res.status(400).json({ errors: errors.array() });
