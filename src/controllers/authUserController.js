@@ -13,8 +13,8 @@ const transporter = nodemailer.createTransport({
 
 exports.register = async (req, res) => {
     try {
-      const { userName, email, password,fitnessGoals,profilePicture} = req.body;  
-      // const profilePicture = req.file ? req.file.buffer.toString("base64") : null;   
+      const { userName, email, password,fitnessGoals} = req.body;  
+      const profilePicture = req.file ? req.file.buffer.toString("base64") : null;   
       let user = await User.findOne({ email });
       if (user) return res.status(400).json({ message: "User already exists" });
   
