@@ -1,5 +1,6 @@
 const express = require("express");
 const { check, validationResult } = require("express-validator");
+const multer = require("multer");
 const {
   requestPasswordReset,
   resetPassword,
@@ -7,48 +8,66 @@ const {
   login,
   register
 } = require("../controllers/authTrainerController");
-// const authMiddleware = require("../middleware/authMiddleware");
 
 const router = express.Router();
+
+// Multer setup for file uploads (profile picture / video)
+const storage = multer.memoryStorage();
+const upload = multer({ storage });
+
+// Validation rules for trainer registration
 const registerValidation = [
-  check("userName", "Please include a valid userName"),
-    check("email", "Please include a valid email").isEmail(),
-    check("password", "Password must be at least 6 characters long").isLength({ min: 6 }),
-  ];
-  
-  const loginValidation = [
-    check("email", "Please include a valid email").isEmail(),
-    check("password", "Password is required").not().isEmpty(),
-  ];
-  
-  router.post("/register", registerValidation, (req, res) => {
-    const errors = validationResult(req);
-    if (!errors.isEmpty()) {
-      return res.status(400).json({ errors: errors.array() });
-    }
-    register(req, res);
-  });
-  
-  router.post("/login", loginValidation, (req, res) => {
-    const errors = validationResult(req);
-    if (!errors.isEmpty()) {
-      return res.status(400).json({ errors: errors.array() });
-    }
-    login(req, res);
-  });
-  
-router.post(
-  "/request-password-reset",
+  check("userName", "Please include a valid userName").not().isEmpty(),
   check("email", "Please include a valid email").isEmail(),
-  requestPasswordReset
-);
+  check("password", "Password must be at least 6 characters long").isLength({ min: 6 }),
+  check("confirmPassword", "Passwords must match").custom((value, { req }) => value === req.body.password),
+  check("phone", "Phone number must be 10 digits").optional().isLength({ min: 10, max: 10 }),
+  check("expertise", "At least one expertise is required").isArray({ min: 1 }),
+  check("availability", "Availability must be an array").isArray(),
+  check("facebook").optional().isURL(),
+  check("instagram").optional().isURL(),
+  check("twitter").optional().isURL(),
+  check("linkedin").optional().isURL(),
+  check("youtube").optional().isURL(),
+];
 
-router.post(
-  "/reset-password/:token",
-  check("password", "Password must be at least 6 characters").isLength({ min: 6 }),
-  resetPassword
-);
+// ✅ Fix: Define `loginValidation`
+const loginValidation = [
+  check("email", "Please include a valid email").isEmail(),
+  check("password", "Password is required").not().isEmpty(),
+];
 
-// router.get("/profile", authMiddleware, getTrainerProfile);
+// Trainer Registration
+router.post("/register", upload.single("coverMedia"), registerValidation, (req, res) => {
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) {
+    return res.status(400).json({ errors: errors.array() });
+  }
+
+  // Append cover media details
+  if (req.file) {
+    req.body.coverMedia = {
+      url: `uploads/${req.file.filename}`,
+      type: req.body.coverMediaType || "image",
+    };
+  }
+
+  // Default ratings (will be updated later by reviews)
+  req.body.ratings = {
+    averageRating: 0,
+    totalReviews: 0,
+  };
+
+  register(req, res);
+});
+
+// Trainer Login
+router.post("/login", loginValidation, (req, res) => {
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) {
+    return res.status(400).json({ errors: errors.array() });
+  }
+  login(req, res);
+});
 
 module.exports = router;
