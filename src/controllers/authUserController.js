@@ -58,7 +58,7 @@ exports.requestPasswordReset = async (req, res) => {
     user.resetTokenExpiry = Date.now() + 15 * 60 * 1000; // 15 minutes
     await user.save();
 
-    const resetLink = `${process.env.FRONTEND_URL}/reset-password/${resetToken}`;
+    const resetLink = `${process.env.FRONTEND_URL}/customer/reset-password/${resetToken}`;
     await transporter.sendMail({
       to: user.email,
       subject: "Password Reset Request",
