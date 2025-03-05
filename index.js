@@ -2,16 +2,28 @@ const express = require("express");
 const mongoose = require("mongoose");
 const dotenv = require("dotenv");
 const connectDB = require('./src/config/db.js');
-const cors = require("cors");
 dotenv.config();
 const app = express();
-app.use(
-    cors({
-      origin: "http://localhost:5173", // Your frontend URL
-      methods: ["GET", "POST", "PUT", "DELETE"],
-      credentials: true,
-    })
-  );
+const cors = require("cors");
+
+const allowedOrigins = [
+  "http://localhost:5173", // ✅ Allow localhost for development
+  "https://fitnesshub-aa.netlify.app" // ✅ Allow Netlify frontend
+];
+
+app.use(cors({
+  origin: function (origin, callback) {
+    if (!origin || allowedOrigins.includes(origin)) {
+      callback(null, true);
+    } else {
+      callback(new Error("Not allowed by CORS"));
+    }
+  },
+  methods: ["GET", "POST", "PUT", "DELETE"],
+  credentials: true
+}));
+
+
 app.use(express.json()); // Parses JSON request body
 app.use(express.urlencoded({ extended: true })); // Parses URL-encoded request body
 
