@@ -84,7 +84,7 @@ exports.requestPasswordReset = async (req, res) => {
     await transporter.sendMail({
       to: trainer.email,
       subject: "Password Reset Request",
-      html: `<p>Click <a href="${resetLink}">here</a> to reset your password. This link expires in 15 minutes.</p>`
+      html: `<p>Click <a href="${resetLink}">here</a> to reset your password Trainer. This link expires in 15 minutes.</p>`
     });
 
     res.json({ message: "Reset link sent to email" });
