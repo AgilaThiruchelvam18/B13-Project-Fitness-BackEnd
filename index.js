@@ -8,7 +8,8 @@ const cors = require("cors");
 
 const allowedOrigins = [
   "http://localhost:5173", // ✅ Allow localhost for development
-  "https://fitnesshub-aa.netlify.app" // ✅ Allow Netlify frontend
+  "https://fitnesshub-aa.netlify.app" ,// ✅ Allow Netlify frontend
+  "https://fitnesshub-5yf3.onrender.com/api/trainer-auth/request-password-reset"
 ];
 
 app.use(cors({
