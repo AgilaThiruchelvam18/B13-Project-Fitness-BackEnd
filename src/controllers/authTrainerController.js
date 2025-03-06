@@ -50,22 +50,28 @@ exports.register = async (req, res) => {
     res.status(500).json({ message: "Server Error", error: error.message });
   }
 };
-
 exports.login = async (req, res) => {
   try {
     const { email, password } = req.body;
-
     const trainer = await Trainer.findOne({ email });
+
     if (!trainer) return res.status(400).json({ message: "Invalid credentials" });
 
     const isMatch = await bcrypt.compare(password, trainer.password);
     if (!isMatch) return res.status(400).json({ message: "Invalid credentials" });
 
     const token = jwt.sign({ userId: trainer._id }, process.env.JWT_SECRET, { expiresIn: "1h" });
-
-    res.json({ token });
+    res
+    .cookie("jwt", token, {
+      httpOnly: true,
+      secure: true, // Set to true for HTTPS
+      sameSite: "None"
+    })
+    .json({ message: "Login successful", user: { id: User._id, email: User.email } }); // ✅ Now sending response
+  
+          // .json({ message: "Login successful" });
   } catch (error) {
-    res.status(500).json({ message: "Server Error", error: error.message });
+    res.status(500).json({ message: "Server error" });
   }
 };
 

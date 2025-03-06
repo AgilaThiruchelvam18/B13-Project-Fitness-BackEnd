@@ -33,20 +33,29 @@ exports.register = async (req, res) => {
   exports.login = async (req, res) => {
     try {
       const { email, password } = req.body;
-      
-      const user = await User.findOne({ email });
-      if (!user) return res.status(400).json({ message: "Invalid credentials" });
+      const User = await User.findOne({ email });
   
-      const isMatch = await bcrypt.compare(password, user.password);
+      if (!User) return res.status(400).json({ message: "Invalid credentials" });
+  
+      const isMatch = await bcrypt.compare(password, User.password);
       if (!isMatch) return res.status(400).json({ message: "Invalid credentials" });
   
-      const token = jwt.sign({ userId: user._id }, process.env.JWT_SECRET, { expiresIn: "1h" });
+      const token = jwt.sign({ userId: User._id }, process.env.JWT_SECRET, { expiresIn: "1h" });
   
-      res.json({ token });
+      res
+      .cookie("jwt", token, {
+        httpOnly: true,
+        secure: true, // Set to true for HTTPS
+        sameSite: "None"
+      })
+      .json({ message: "Login successful", user: { id: User._id, email: User.email } }); // ✅ Now sending response
+        
+      // .json({ message: "Login successful" });
     } catch (error) {
-      res.status(500).json({ message: "Server Error", error: error.message });
+      res.status(500).json({ message: "Server error" });
     }
   };
+  
 exports.requestPasswordReset = async (req, res) => {
   const { email } = req.body;
   try {

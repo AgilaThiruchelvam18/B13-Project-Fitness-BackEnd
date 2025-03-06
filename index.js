@@ -5,7 +5,7 @@ const connectDB = require('./src/config/db.js');
 dotenv.config();
 const app = express();
 const cors = require("cors");
-
+const cookieParser = require("cookie-parser");
 const allowedOrigins = [
   "http://localhost:5173", // ✅ Allow localhost for development
   "https://fitnesshub-aa.netlify.app" ,// ✅ Allow Netlify frontend
@@ -23,7 +23,7 @@ app.use(cors({
   methods: ["GET", "POST", "PUT", "DELETE"],
   credentials: true
 }));
-
+app.use(cookieParser());
 
 app.use(express.json()); // Parses JSON request body
 app.use(express.urlencoded({ extended: true })); // Parses URL-encoded request body
@@ -38,6 +38,8 @@ const classRoutes = require("./src/routes/classRoute");
 const bookingRoutes = require("./src/routes/bookingRoute");
 const reviewRoutes = require("./src/routes/reviewRoute");
 const recommendationRoutes = require("./src/routes/recommendationRoute");
+const dashboardRoutes = require("./routes/dashboardRoutes");
+
 // const paymentRoutes = require("./src/routes/paymentRoute");
 
 // // Use Routes
@@ -49,6 +51,9 @@ app.use("/api/classes", classRoutes);
 app.use("/api/bookings", bookingRoutes);
 app.use("/api/reviews", reviewRoutes);
 app.use("/api/recommendations", recommendationRoutes);
+
+// Use routes
+app.use("/api", dashboardRoutes);
 // app.use("/api/payments", paymentRoutes);
 
 const PORT = process.env.PORT || 3000;
