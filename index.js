@@ -38,7 +38,7 @@ const classRoutes = require("./src/routes/classRoute");
 const bookingRoutes = require("./src/routes/bookingRoute");
 const reviewRoutes = require("./src/routes/reviewRoute");
 const recommendationRoutes = require("./src/routes/recommendationRoute");
-const dashboardRoutes = require("./routes/dashboardRoutes");
+const dashboardRoutes = require("./src/routes/DashboardRoutes");
 
 // const paymentRoutes = require("./src/routes/paymentRoute");
 
