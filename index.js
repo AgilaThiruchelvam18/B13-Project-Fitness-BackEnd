@@ -26,7 +26,7 @@ app.use(cors({
 }));
 
 app.use(cookieParser());
-
+app.options("*", cors());
 app.use(express.json()); // Parses JSON request body
 app.use(express.urlencoded({ extended: true })); // Parses URL-encoded request body
 
