@@ -6,7 +6,7 @@ const {
   getUserProfile,
   login,
   register
-} = require("../controllers/authUserController");
+} = require("../controllers/authTrainerController");
 // const authMiddleware = require("../middleware/authMiddleware");
 const multer = require("multer");
 
