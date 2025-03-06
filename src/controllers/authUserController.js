@@ -33,28 +33,28 @@ exports.register = async (req, res) => {
   exports.login = async (req, res) => {
     try {
       const { email, password } = req.body;
-      const User = await User.findOne({ email });
+      const user = await User.findOne({ email }); // ✅ Use 'user' instead of 'User'
   
-      if (!User) return res.status(400).json({ message: "Invalid credentials" });
+      if (!user) return res.status(400).json({ message: "Invalid credentials" });
   
-      const isMatch = await bcrypt.compare(password, User.password);
+      const isMatch = await bcrypt.compare(password, user.password);
       if (!isMatch) return res.status(400).json({ message: "Invalid credentials" });
   
-      const token = jwt.sign({ userId: User._id }, process.env.JWT_SECRET, { expiresIn: "1h" });
+      const token = jwt.sign({ userId: user._id }, process.env.JWT_SECRET, { expiresIn: "1h" });
   
       res
-      .cookie("jwt", token, {
-        httpOnly: true,
-        secure: true, // Set to true for HTTPS
-        sameSite: "None"
-      })
-      .json({ message: "Login successful", user: { id: User._id, email: User.email } }); // ✅ Now sending response
-        
-      // .json({ message: "Login successful" });
+        .cookie("jwt", token, {
+          httpOnly: true,
+          secure: true, // Ensure this is true only in production with HTTPS
+          sameSite: "None",
+        })
+        .json({ message: "Login successful", user: { id: user._id, email: user.email } }); // ✅ Now sends response
     } catch (error) {
-      res.status(500).json({ message: "Server error" });
+      console.error("Login Error:", error); // ✅ Log error for debugging
+      res.status(500).json({ message: "Server error", error: error.message });
     }
   };
+  
   
 exports.requestPasswordReset = async (req, res) => {
   const { email } = req.body;
