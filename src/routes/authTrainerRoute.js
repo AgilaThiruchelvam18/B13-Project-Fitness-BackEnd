@@ -21,14 +21,14 @@ const registerValidation = [
   check("email", "Please include a valid email").isEmail(),
   check("password", "Password must be at least 6 characters long").isLength({ min: 6 }),
   check("confirmPassword", "Passwords must match").custom((value, { req }) => value === req.body.password),
-  check("phone", "Phone number must be 10 digits").optional().isLength({ min: 10, max: 10 }),
-  check("expertise", "At least one expertise is required").isArray({ min: 1 }),
-  check("availability", "Availability must be an array").isArray(),
-  check("facebook").optional().isURL(),
-  check("instagram").optional().isURL(),
-  check("twitter").optional().isURL(),
-  check("linkedin").optional().isURL(),
-  check("youtube").optional().isURL(),
+  // check("phone", "Phone number must be 10 digits").optional().isLength({ min: 10, max: 10 }),
+  // check("expertise", "At least one expertise is required").isArray({ min: 1 }),
+  // check("availability", "Availability must be an array").isArray(),
+  // check("facebook").optional().isURL(),
+  // check("instagram").optional().isURL(),
+  // check("twitter").optional().isURL(),
+  // check("linkedin").optional().isURL(),
+  // check("youtube").optional().isURL(),
 ];
 
 // ✅ Fix: Define `loginValidation`
@@ -45,12 +45,12 @@ router.post("/register", upload.single("coverMedia"), registerValidation, (req, 
   }
 
   // Append cover media details
-  if (req.file) {
-    req.body.coverMedia = {
-      url: `uploads/${req.file.filename}`,
-      type: req.body.coverMediaType || "image",
-    };
-  }
+  // if (req.file) {
+  //   req.body.coverMedia = {
+  //     url: `uploads/${req.file.filename}`,
+  //     type: req.body.coverMediaType || "image",
+  //   };
+  // }
 
   // Default ratings (will be updated later by reviews)
   req.body.ratings = {

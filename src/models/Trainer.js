@@ -4,7 +4,7 @@ const TrainerSchema = new mongoose.Schema({
   userName: { type: String, required: true },
   email: { type: String, required: true, unique: true },
   password: { type: String, required: true }, 
-  phone: { type: String },
+ /* phone: { type: String },
   expertise: { type: [String],}, //["Yoga", "Strength Training"]
   bio: { type: String },
   certifications: { type: [String], default: [] }, //  ["Certified Personal Trainer"]
@@ -28,7 +28,7 @@ const TrainerSchema = new mongoose.Schema({
     twitter: { type: String },
     linkedin: { type: String },
     youtube: { type: String },
-  },
+  },*/
   resetToken: { type: String, default: null },
   resetTokenExpiry: { type: Date, default: null },
   isVerified: { type: Boolean, default: false }, // Email verification
