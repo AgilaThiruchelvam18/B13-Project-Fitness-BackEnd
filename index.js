@@ -4,12 +4,12 @@ const dotenv = require("dotenv");
 const connectDB = require('./src/config/db.js');
 dotenv.config();
 const app = express();
-const cors = require("cors");
 const cookieParser = require("cookie-parser");
+const cors = require("cors");
+
 const allowedOrigins = [
-  "http://localhost:5173", // ✅ Allow localhost for development
-  "https://fitnesshub-aa.netlify.app" ,// ✅ Allow Netlify frontend
-  "https://fitnesshub-5yf3.onrender.com"
+  "http://localhost:5173",  // ✅ Development
+  "https://fitnesshub-aa.netlify.app", // ✅ Netlify frontend
 ];
 
 app.use(cors({
@@ -21,8 +21,10 @@ app.use(cors({
     }
   },
   methods: ["GET", "POST", "PUT", "DELETE"],
-  credentials: true
+  credentials: true, // ✅ Allow sending cookies
+  allowedHeaders: ["Content-Type", "Authorization"], // ✅ Allow custom headers
 }));
+
 app.use(cookieParser());
 
 app.use(express.json()); // Parses JSON request body
