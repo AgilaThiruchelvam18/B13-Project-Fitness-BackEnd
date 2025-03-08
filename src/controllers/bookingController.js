@@ -1,8 +1,6 @@
 const Booking = require("../models/Booking");
 const Trainer = require("../models/Trainer");
 const User = require("../models/User");
-
-// Book a class
 const Class = require("../models/Class");
 
 exports.createBooking = async (req, res) => {
