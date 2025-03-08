@@ -13,7 +13,7 @@ const transporter = nodemailer.createTransport({
 
 exports.register = async (req, res) => {
   try {
-    const { userName, email, password } = req.body;
+    const { userName, email, password, phone, expertise, bio, certifications, availability, facebook, instagram, twitter, linkedin, youtube } = req.body;
 //  , phone, expertise, bio, certifications, availability, facebook, instagram, twitter, linkedin, youtube
     let trainer = await Trainer.findOne({ email });
     if (trainer) return res.status(400).json({ message: "User already exists" });
@@ -22,26 +22,26 @@ exports.register = async (req, res) => {
     const hashedPassword = await bcrypt.hash(password, salt);
 
     // Handle cover media
-    // let coverMedia = {};
-    // if (req.file) {
-    //   coverMedia = {
-    //     url: `uploads/${req.file.filename}`,
-    //     type: req.body.coverMediaType || "image",
-    //   };
-    // }
+    let coverMedia = {};
+    if (req.file) {
+      coverMedia = {
+        url: `uploads/${req.file.filename}`,
+        type: req.body.coverMediaType || "image",
+      };
+    }
 
     trainer = new Trainer({
       userName,
       email,
       password: hashedPassword,
-      // phone,
-      // expertise,
-      // bio,
-      // certifications,
-      // availability,
-      // ratings: { averageRating: 0, totalReviews: 0 }, // Default ratings
-      // coverMedia,
-      // socialLinks: { facebook, instagram, twitter, linkedin, youtube }
+      phone,
+      expertise,
+      bio,
+      certifications,
+      availability,
+      ratings: { averageRating: 4, totalReviews: 5 }, // Default ratings
+      coverMedia,
+      socialLinks: { facebook, instagram, twitter, linkedin, youtube }
     });
 
     await trainer.save();
