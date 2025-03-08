@@ -3,7 +3,6 @@ const Trainer = require("../models/Trainer");
 const User = require("../models/User");
 
 // Book a class
-const Booking = require("../models/Booking");
 const Class = require("../models/Class");
 
 exports.createBooking = async (req, res) => {
