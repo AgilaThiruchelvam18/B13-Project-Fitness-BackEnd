@@ -13,8 +13,8 @@ const transporter = nodemailer.createTransport({
 
 exports.register = async (req, res) => {
   try {
-    const { userName, email, password, expertise, phone, bio, certifications, availability, facebook, instagram, twitter, linkedin, youtube } = req.body;
-
+    const { userName, email, password, expertise, phone, bio, certifications } = req.body;
+// , availability, facebook, instagram, twitter, linkedin, youtube
     let trainer = await Trainer.findOne({ email });
     if (trainer) return res.status(400).json({ message: "User already exists" });
 
@@ -38,11 +38,11 @@ exports.register = async (req, res) => {
       phone,
       bio,
       certifications,
-      availability,
       ratings: { averageRating: 4, totalReviews: 5 }, // Default ratings
       coverMedia,
-      socialLinks: { facebook, instagram, twitter, linkedin, youtube }
     });
+      // socialLinks: { facebook, instagram, twitter, linkedin, youtube }
+      // availability,
 
     await trainer.save();
     res.status(201).json({ message: "Trainer registered successfully" });
