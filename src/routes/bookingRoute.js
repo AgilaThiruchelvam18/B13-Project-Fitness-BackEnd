@@ -8,6 +8,6 @@ const { protectCustomer, protectTrainer } = require("../middleware/authMiddlewar
 // router.get("/:id",protectCustomer,  bookingController.getBookingById);
 // router.put("/:id",protectCustomer,  bookingController.updateBooking);
 // router.delete("/:id",protectCustomer,  bookingController.cancelBooking);
-router.get("/bookings", protectTrainer, bookingController.getBookings);
+router.get("/", protectTrainer, bookingController.getBookings);
 
 module.exports = router;

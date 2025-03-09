@@ -1,11 +1,14 @@
 const express = require("express");
 const router = express.Router();
-const classController = require("../controllers/classController");
 const { protectTrainer } = require("../middleware/authMiddleware");
+const trainerController = require("../controllers/classController");
+const multer = require("multer");
 
-router.post("/classes", protectTrainer, classController.createClass);
-router.put("/classes/:id", protectTrainer, classController.updateClass);
-router.delete("/classes/:id", protectTrainer, classController.deleteClass);
-router.get("/classes", protectTrainer, classController.getTrainerClasses);
+const upload = multer({ dest: "uploads/" });
+
+router.post("/classes", protectTrainer, upload.fields([{ name: "image" }, { name: "video" }]), trainerController.createClass);
+router.put("/classes/:id", protectTrainer, trainerController.updateClass);
+router.delete("/classes/:id", protectTrainer, trainerController.deleteClass);
+router.get("/classes", protectTrainer, trainerController.getTrainerClasses);
 
 module.exports = router;
