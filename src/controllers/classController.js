@@ -2,7 +2,7 @@ const Class = require("../models/Class");
 const Trainer = require("../models/Trainer");
 const Payment = require("../models/Payment");
 
-export const createClass = async (req, res) => {
+exports.createClass = async (req, res) => {
   try {
     const newClass = await Class.create({ trainer: req.user.id, ...req.body });
     res.status(201).json(newClass);
@@ -11,7 +11,7 @@ export const createClass = async (req, res) => {
   }
 };
 
-export const updateClass = async (req, res) => {
+exports.updateClass = async (req, res) => {
   try {
     const updatedClass = await Class.findByIdAndUpdate(req.params.id, req.body, { new: true });
     res.status(200).json(updatedClass);
@@ -20,7 +20,7 @@ export const updateClass = async (req, res) => {
   }
 };
 
-export const deleteClass = async (req, res) => {
+exports.deleteClass = async (req, res) => {
   try {
     await Class.findByIdAndDelete(req.params.id);
     res.status(200).json({ message: "Class deleted successfully" });
@@ -29,7 +29,7 @@ export const deleteClass = async (req, res) => {
   }
 };
 
-export const getTrainerClasses = async (req, res) => {
+exports.getTrainerClasses = async (req, res) => {
   try {
     const classes = await Class.find({ trainer: req.user.id });
     res.status(200).json(classes);

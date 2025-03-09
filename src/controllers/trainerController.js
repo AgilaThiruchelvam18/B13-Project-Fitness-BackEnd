@@ -1,6 +1,10 @@
+
+// import Trainer from "../models/Trainer";
+
+const Payment = require("../models/Payment");
 const Trainer = require("../models/Trainer");
 
-export const manageSchedule = async (req, res) => {
+exports.manageSchedule = async (req, res) => {
   try {
     const trainer = await Trainer.findByIdAndUpdate(req.user.id, { schedule: req.body.schedule }, { new: true });
     res.status(200).json(trainer);
@@ -9,16 +13,7 @@ export const manageSchedule = async (req, res) => {
   }
 };
 
-export const getBookings = async (req, res) => {
-  try {
-    const bookings = await Booking.find({ trainer: req.user.id }).populate("user", "name email");
-    res.status(200).json(bookings);
-  } catch (error) {
-    res.status(500).json({ message: error.message });
-  }
-};
-
-export const updateProfile = async (req, res) => {
+exports.updateProfile = async (req, res) => {
   try {
     const updatedTrainer = await Trainer.findByIdAndUpdate(req.user.id, req.body, { new: true });
     res.status(200).json(updatedTrainer);
@@ -27,7 +22,7 @@ export const updateProfile = async (req, res) => {
   }
 };
 
-export const getEarnings = async (req, res) => {
+exports.getEarnings = async (req, res) => {
   try {
     const earnings = await Payment.find({ trainer: req.user.id });
     res.status(200).json(earnings);

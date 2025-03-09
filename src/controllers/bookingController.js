@@ -4,7 +4,7 @@ const User = require("../models/User");
 const Class = require("../models/Class");
 
 // ✅ Create a new booking
-export const getBookings = async (req, res) => {
+exports.getBookings = async (req, res) => {
   try {
     const bookings = await Booking.find({ trainer: req.user.id }).populate("user", "name email");
     res.status(200).json(bookings);

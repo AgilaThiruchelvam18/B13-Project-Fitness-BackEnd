@@ -1,22 +1,28 @@
 const express = require("express");
 const router = express.Router();
-const { getAllTrainers, getTrainerById, updateTrainer, deleteTrainer } = require("../controllers/trainerController");
-const { protectTrainer } = require("../middleware/authMiddleware");
-const trainerController = require("../controllers/trainerController");
-  
+const {
+  getAllTrainers,
+  getTrainerById,
+  updateTrainer,
+  deleteTrainer,
+  manageSchedule,
+//   getBookings,
+  updateProfile,
+  getEarnings,
+//   getTrainerOverview
+} = require("../controllers/trainerController");
 
+const { protectTrainer } = require("../middleware/authMiddleware");
+
+// Define routes
 router.get("/", getAllTrainers);
 router.get("/:id", getTrainerById);
+router.put("/schedule", protectTrainer, manageSchedule); // ✅ Moved before dynamic route
 router.put("/:id", updateTrainer);
 router.delete("/:id", deleteTrainer);
-router.put("/schedule", protectTrainer, trainerController.manageSchedule);
-router.get("/bookings", protectTrainer, trainerController.getBookings);
-router.put("/profile", protectTrainer, trainerController.updateProfile);
-router.get("/earnings", protectTrainer, trainerController.getEarnings);
-router.get("/overview", protectTrainer, trainerController.getTrainerOverview);
-module.exports = router;
-
-
-
+// router.get("/bookings", protectTrainer, getBookings);
+router.put("/profile", protectTrainer, updateProfile);
+router.get("/earnings", protectTrainer, getEarnings);
+// router.get("/overview", protectTrainer, getTrainerOverview);
 
 module.exports = router;
