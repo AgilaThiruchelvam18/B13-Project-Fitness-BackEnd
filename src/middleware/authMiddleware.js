@@ -20,7 +20,7 @@ exports.protectTrainer = async (req, res, next) => {
 
 exports.protectCustomer = async (req, res, next) => {
     try {
-      const token = req.cookies.jwt; // Get token from HTTP-only cookie
+      const token = req.cookies?.jwt; // Get token from HTTP-only cookie
       if (!token) return res.status(401).json({ message: "Unauthorized access" });
   
       const decoded = jwt.verify(token, process.env.JWT_SECRET);
