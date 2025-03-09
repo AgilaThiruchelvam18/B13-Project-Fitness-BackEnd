@@ -1,11 +1,11 @@
 const express = require("express");
 const router = express.Router();
 const classController = require("../controllers/classController");
+const { protectTrainer } = require("../middleware/authMiddleware");
 
-router.post("/", classController.createClass);
-router.get("/", classController.getAllClasses);
-// router.get("/:id", classController.getClassById);
-// router.put("/:id", classController.updateClass);
-// router.delete("/:id", classController.deleteClass);
+router.post("/classes", protectTrainer, classController.createClass);
+router.put("/classes/:id", protectTrainer, classController.updateClass);
+router.delete("/classes/:id", protectTrainer, classController.deleteClass);
+router.get("/classes", protectTrainer, classController.getTrainerClasses);
 
 module.exports = router;
