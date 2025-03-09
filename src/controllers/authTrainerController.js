@@ -1,8 +1,8 @@
 
-const Trainer = require("../models/Trainer");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const nodemailer = require("nodemailer");
+const Trainer = require("../models/Trainer");
 
 const transporter = nodemailer.createTransport({
   service: "gmail",
