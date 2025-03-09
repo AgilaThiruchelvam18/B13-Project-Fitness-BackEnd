@@ -1,3 +1,4 @@
+
 const Trainer = require("../models/Trainer");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
@@ -64,11 +65,11 @@ exports.login = async (req, res) => {
     const token = jwt.sign({ userId: trainer._id }, process.env.JWT_SECRET, { expiresIn: "1h" });
 
     res
-      .cookie("jwt", token, {
-        httpOnly: true,
-        secure: process.env.NODE_ENV === "production", // Set true for HTTPS
-        sameSite: "None",
-      })
+    .cookie("jwt", token, {
+      httpOnly: true,
+      secure: true, // Ensure this is true only in production with HTTPS
+      sameSite: "None",
+    })
       .json({ message: "Login successful", user: { id: trainer._id, email: trainer.email } }); // ✅ Fixed incorrect `User`
   } catch (error) {
     res.status(500).json({ message: "Server error" });
