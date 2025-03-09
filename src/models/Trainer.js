@@ -8,12 +8,12 @@ const TrainerSchema = new mongoose.Schema({
   phone: { type: String },
   bio: { type: String },
   certifications: { type: [String], default: [] }, // Example: ["Certified Personal Trainer"]
-  availability: [
-    {
-      day: { type: String }, // Example: "Monday"
-      timeSlots: { type: [String] }, // Example: ["08:00-09:00", "18:00-19:00"]
-    }
-  ],
+  // availability: [
+  //   {
+  //     day: { type: String }, // Example: "Monday"
+  //     timeSlots: { type: [String] }, // Example: ["08:00-09:00", "18:00-19:00"]
+  //   }
+  // ],
   ratings: {
     averageRating: { type: Number, default: 0 },
     totalReviews: { type: Number, default: 0 },
@@ -22,13 +22,13 @@ const TrainerSchema = new mongoose.Schema({
     url: { type: String, default: null }, 
     type: { type: String, enum: ["image", "video"], default: "image" },
   },
-  socialLinks: {
-    facebook: { type: String, default: null },
-    instagram: { type: String, default: null },
-    twitter: { type: String, default: null },
-    linkedin: { type: String, default: null },
-    youtube: { type: String, default: null },
-  },
+  // socialLinks: {
+  //   facebook: { type: String, default: null },
+  //   instagram: { type: String, default: null },
+  //   twitter: { type: String, default: null },
+  //   linkedin: { type: String, default: null },
+  //   youtube: { type: String, default: null },
+  // },
   resetToken: { type: String, default: null },
   resetTokenExpiry: { type: Date, default: null },
   isVerified: { type: Boolean, default: false }, // Email verification
