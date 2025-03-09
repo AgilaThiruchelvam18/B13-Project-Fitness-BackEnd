@@ -13,8 +13,8 @@ const transporter = nodemailer.createTransport({
 
 exports.register = async (req, res) => {
   try {
-    const { userName, email, password,expertise } = req.body;
-//  , phone, expertise, bio, certifications, availability, facebook, instagram, twitter, linkedin, youtube
+    const { userName, email, password, expertise, phone, bio, certifications, availability, facebook, instagram, twitter, linkedin, youtube } = req.body;
+
     let trainer = await Trainer.findOne({ email });
     if (trainer) return res.status(400).json({ message: "User already exists" });
 
@@ -22,7 +22,7 @@ exports.register = async (req, res) => {
     const hashedPassword = await bcrypt.hash(password, salt);
 
     // Handle cover media
-    let coverMedia = {};
+    let coverMedia = { url: null, type: "image" };
     if (req.file) {
       coverMedia = {
         url: `uploads/${req.file.filename}`,
@@ -34,22 +34,23 @@ exports.register = async (req, res) => {
       userName,
       email,
       password: hashedPassword,
-      expertise
+      expertise,
+      phone,
+      bio,
+      certifications,
+      availability,
+      ratings: { averageRating: 4, totalReviews: 5 }, // Default ratings
+      coverMedia,
+      socialLinks: { facebook, instagram, twitter, linkedin, youtube }
     });
-// phone,
-     
-      // bio,
-      // certifications,
-      // availability,
-      // ratings: { averageRating: 4, totalReviews: 5 }, // Default ratings
-      // coverMedia,
-      // socialLinks: { facebook, instagram, twitter, linkedin, youtube }
+
     await trainer.save();
     res.status(201).json({ message: "Trainer registered successfully" });
   } catch (error) {
     res.status(500).json({ message: "Server Error", error: error.message });
   }
 };
+
 exports.login = async (req, res) => {
   try {
     const { email, password } = req.body;
@@ -61,15 +62,14 @@ exports.login = async (req, res) => {
     if (!isMatch) return res.status(400).json({ message: "Invalid credentials" });
 
     const token = jwt.sign({ userId: trainer._id }, process.env.JWT_SECRET, { expiresIn: "1h" });
+
     res
-    .cookie("jwt", token, {
-      httpOnly: true,
-      secure: true, // Set to true for HTTPS
-      sameSite: "None"
-    })
-    .json({ message: "Login successful", user: { id: User._id, email: User.email } }); // ✅ Now sending response
-  
-          // .json({ message: "Login successful" });
+      .cookie("jwt", token, {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === "production", // Set true for HTTPS
+        sameSite: "None",
+      })
+      .json({ message: "Login successful", user: { id: trainer._id, email: trainer.email } }); // ✅ Fixed incorrect `User`
   } catch (error) {
     res.status(500).json({ message: "Server error" });
   }
