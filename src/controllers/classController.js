@@ -5,6 +5,9 @@ const cloudinary = require("../utils/cloudinary"); // For image/video uploads
 // Create a class
 const createClass = async (req, res) => {
   try {
+    console.log("Request Body:", req.body);
+    console.log("Request Files:", req.files);
+    
     const { title, description, type, duration, timeSlots, price, availability } = req.body;
     let imageUrl = "", videoUrl = "";
 
@@ -32,9 +35,11 @@ const createClass = async (req, res) => {
 
     res.status(201).json(newClass);
   } catch (error) {
+    console.error("Error creating class:", error);
     res.status(500).json({ message: error.message });
   }
 };
+
 
 // Update a class
 const updateClass = async (req, res) => {
