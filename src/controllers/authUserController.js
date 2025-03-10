@@ -46,8 +46,7 @@ exports.register = async (req, res) => {
         httpOnly: true,
         secure: process.env.NODE_ENV === "production",  // ✅ Works in both dev & production
         sameSite: "None",  // ✅ Allows cross-origin requests
-      })
-      
+      })     
         .json({ message: "Login successful", user: { id: user._id, email: user.email } }); // ✅ Now sends response
     } catch (error) {
       console.error("Login Error:", error); // ✅ Log error for debugging

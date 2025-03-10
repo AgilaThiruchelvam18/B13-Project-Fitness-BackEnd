@@ -6,7 +6,7 @@ const multer = require("multer");
 
 const upload = multer({ dest: "uploads/" });
 
-router.post("/", protectTrainer, upload.fields([{ name: "image" }, { name: "video" }]), trainerController.createClass);
+router.post("/", protectTrainer, trainerController.createClass);
 router.put("/classes/:id", protectTrainer, trainerController.updateClass);
 router.delete("/classes/:id", protectTrainer, trainerController.deleteClass);
 router.get("/", protectTrainer, trainerController.getTrainerClasses);
