@@ -18,7 +18,7 @@ const createClass = async (req, res) => {
     }
 
     const newClass = await Class.create({
-      trainer: req.user.id,
+      trainer: req.user._id,
       title,
       description,
       type,
