@@ -7,22 +7,11 @@ const app = express();
 const cookieParser = require("cookie-parser");
 const cors = require("cors");
 
-const allowedOrigins = [
-  "https://fitnesshub-aa.netlify.app", // ✅ Netlify frontend
-  "https://fitnesshub-5yf3.onrender.com" 
-];
-
 app.use(cors({
-  origin: function (origin, callback) {
-    if (!origin || allowedOrigins.includes(origin)) {
-      callback(null, true);
-    } else {
-      callback(new Error("Not allowed by CORS"));
-    }
-  },
-  methods: ["GET", "POST", "PUT", "DELETE"],
-  credentials: true, // ✅ Allow sending cookies
-  allowedHeaders: ["Content-Type", "Authorization"], // ✅ Allow custom headers
+  origin: "https://fitnesshub-aa.netlify.app", // ✅ Allow requests from your Netlify frontend
+  credentials: true, // ✅ Allow cookies and authentication headers
+  methods: ["GET", "POST", "PUT", "DELETE"], // ✅ Allowed HTTP methods
+  allowedHeaders: ["Content-Type", "Authorization"] // ✅ Allowed headers
 }));
 
 app.use(cookieParser());
