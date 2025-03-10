@@ -1,36 +1,22 @@
 const Class = require("../models/Class");
-const Trainer = require("../models/Trainer");
-const cloudinary = require("../utils/cloudinary"); // For image/video uploads
 
-// Create a class
+// Create a class (Without Cloudinary)
 const createClass = async (req, res) => {
   try {
     console.log("Request Body:", req.body);
     console.log("Request Files:", req.files);
-    
+
     const { title, description, type, duration, timeSlots, price, availability } = req.body;
-    let imageUrl = "", videoUrl = "";
 
-    if (req.files?.image) {
-      const result = await cloudinary.uploader.upload(req.files.image.path);
-      imageUrl = result.secure_url;
-    }
-    if (req.files?.video) {
-      const result = await cloudinary.uploader.upload(req.files.video.path, { resource_type: "video" });
-      videoUrl = result.secure_url;
-    }
-
+    // Create new class
     const newClass = await Class.create({
       trainer: req.user._id,
       title,
       description,
       type,
       duration,
-      // timeSlots,
       price,
       availability,
-      image: imageUrl,
-      video: videoUrl
     });
 
     res.status(201).json(newClass);
@@ -39,6 +25,8 @@ const createClass = async (req, res) => {
     res.status(500).json({ message: error.message });
   }
 };
+
+module.exports = { createClass };
 
 
 // Update a class
