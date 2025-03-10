@@ -6,6 +6,7 @@ const {
   updateTrainer,
   deleteTrainer,
   manageSchedule,
+  getTrainerProfile,
   getTrainerId,
 //   getBookings,
   updateProfile,
