@@ -43,7 +43,7 @@ exports.register = async (req, res) => {
       const token = jwt.sign({ userId: user._id }, process.env.JWT_SECRET, { expiresIn: "1h" });
   
       res
-        .cookie("jwt", token, {
+        .cookie("customer_jwt", token, {
           httpOnly: true,
           secure: true, // Ensure this is true only in production with HTTPS
           sameSite: "None",

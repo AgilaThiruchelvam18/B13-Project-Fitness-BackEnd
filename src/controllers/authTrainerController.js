@@ -65,7 +65,7 @@ exports.login = async (req, res) => {
     const token = jwt.sign({ userId: trainer._id }, process.env.JWT_SECRET, { expiresIn: "1h" });
 
     res
-    .cookie("jwt", token, {
+    .cookie("trainer_jwt", token, {
       httpOnly: true,
       secure: true, // Ensure this is true only in production with HTTPS
       sameSite: "None",
