@@ -46,8 +46,8 @@ exports.register = async (req, res) => {
         .cookie("jwt", token, {
           httpOnly: true,
           secure: true, // Ensure this is true only in production with HTTPS
-          sameSite: "None",
-        })
+          sameSite: "Strict",
+                })
         .json({ message: "Login successful", user: { id: user._id, email: user.email } }); // ✅ Now sends response
     } catch (error) {
       console.error("Login Error:", error); // ✅ Log error for debugging
