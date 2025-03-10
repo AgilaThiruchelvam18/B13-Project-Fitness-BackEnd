@@ -67,7 +67,8 @@ exports.login = async (req, res) => {
     res
     .cookie("trainer_jwt", token, {
       httpOnly: true,
-      secure: true, // Ensure this is true only in production with HTTPS
+      secure: process.env.NODE_ENV === "production", 
+      // secure: true, 
       sameSite: "None",
             })
       .json({ message: "Login successful", user: { id: trainer._id, email: trainer.email } }); // ✅ Fixed incorrect `User`

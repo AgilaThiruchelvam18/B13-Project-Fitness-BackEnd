@@ -45,7 +45,8 @@ exports.register = async (req, res) => {
       res
         .cookie("customer_jwt", token, {
           httpOnly: true,
-          secure: true, // Ensure this is true only in production with HTTPS
+          secure: process.env.NODE_ENV === "production", 
+          // secure: true,
           sameSite: "None",
                 })
         .json({ message: "Login successful", user: { id: user._id, email: user.email } }); // ✅ Now sends response
