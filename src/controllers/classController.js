@@ -59,7 +59,7 @@ const deleteClass = async (req, res) => {
 // Get trainer's classes
 const getTrainerClasses = async (req, res) => {
   try {
-    const classes = await Class.find({ trainer: req.user.id });
+    const classes = await Class.find({ trainer: req.user._id });
     res.status(200).json(classes);
   } catch (error) {
     res.status(500).json({ message: error.message });
