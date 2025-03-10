@@ -7,7 +7,7 @@ const ClassSchema = new mongoose.Schema({
   type: { type: String, required: true, enum: ["Yoga", "Strength Training", "Cardio", "Zumba", "Meditation", "Nutrition"] },
   duration: { type: Number, required: true },
   timeSlots: [{ day: String, time: String }],
-  price: { type: Number, required: true },
+    price: { type: Number, required: true },
   availability: { type: Boolean, default: true },
   image: { type: String },  // URL of the class image
   video: { type: String }   // URL of the class video
