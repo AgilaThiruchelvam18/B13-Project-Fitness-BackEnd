@@ -60,9 +60,9 @@ try {
   res.status(500).json({ message: "Server error" });
 }
 };
-exports.getTrainerProfile = async (req, res) => {
+const getTrainerProfile = async (req, res) => {
   try {
-    const trainer = await Trainer.findById(req.user._id);
+    const trainer = await Trainer.findById(req.user._id); // Use logged-in user's ID
     if (!trainer) {
       return res.status(404).json({ message: "Trainer not found" });
     }
