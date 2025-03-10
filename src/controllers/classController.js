@@ -1,7 +1,7 @@
 const Class = require("../models/Class");
 
 // ✅ Create a new class
-exports.createClass = async (req, res) => {
+const createClass = async (req, res) => {
   try {
     const { title, description, category, duration, timeSlots, capacity, price, trainer } = req.body;
 
