@@ -66,7 +66,7 @@ exports.login = async (req, res) => {
 
     res.cookie("trainer_jwt", token, {
       httpOnly: true,  // ✅ Protects against XSS attacks
-      secure: process.env.NODE_ENV === "production",  // ✅ Secure only in production
+      secure: true,  // ✅ Secure only in production
       sameSite: "None",  // ✅ Required for cross-origin requests
     })
       .json({ message: "Login successful", user: { id: trainer._id, email: trainer.email } }); // ✅ Fixed incorrect `User`

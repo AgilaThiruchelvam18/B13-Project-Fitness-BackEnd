@@ -44,7 +44,7 @@ exports.register = async (req, res) => {
   
       res.cookie("customer_jwt", token, {
         httpOnly: true,  // ✅ Protects against XSS attacks
-        secure: process.env.NODE_ENV === "production",  // ✅ Secure only in production
+        secure: true,  // ✅ Secure only in production
         sameSite: "None",  // ✅ Required for cross-origin requests
       })
         .json({ message: "Login successful", user: { id: user._id, email: user.email } }); // ✅ Now sends response
