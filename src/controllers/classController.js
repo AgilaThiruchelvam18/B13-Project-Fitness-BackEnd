@@ -26,7 +26,7 @@ const createClass = async (req, res) => {
       description,
       type,
       duration,
-      timeSlots,
+      // timeSlots,
       price,
       availability,
       image: imageUrl,
