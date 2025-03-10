@@ -45,8 +45,7 @@ exports.register = async (req, res) => {
       res
         .cookie("customer_jwt", token, {
           httpOnly: true,
-          secure: process.env.NODE_ENV === "production", 
-          // secure: true,
+          secure: true,
           sameSite: "None",
                 })
         .json({ message: "Login successful", user: { id: user._id, email: user.email } }); // ✅ Now sends response
@@ -55,7 +54,8 @@ exports.register = async (req, res) => {
       res.status(500).json({ message: "Server error", error: error.message });
     }
   };
-  
+            // secure: process.env.NODE_ENV === "production", 
+
   
 exports.requestPasswordReset = async (req, res) => {
   const { email } = req.body;
