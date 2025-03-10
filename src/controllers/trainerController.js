@@ -51,6 +51,15 @@ exports.getTrainerById = async (req, res) => {
     res.status(500).json({ message: error.message });
   }
 };
+exports.getTrainerId = async (req, res) => { 
+try {
+  const trainer = await Trainer.findById(req.user.id);
+  if (!trainer) return res.status(404).json({ message: "Trainer not found" });
+  res.json(trainer);
+} catch (error) {
+  res.status(500).json({ message: "Server error" });
+}
+};
 
 // Update trainer
 exports.updateTrainer = async (req, res) => {

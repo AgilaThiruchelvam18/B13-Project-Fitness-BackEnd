@@ -6,6 +6,7 @@ const {
   updateTrainer,
   deleteTrainer,
   manageSchedule,
+  getTrainerId,
 //   getBookings,
   updateProfile,
   getEarnings,
@@ -17,6 +18,7 @@ const { protectTrainer } = require("../middleware/authMiddleware");
 // Define routes
 router.get("/", getAllTrainers);
 router.get("/:id", getTrainerById);
+router.get("/me", protectTrainer,getTrainerId);
 router.put("/schedule", protectTrainer, manageSchedule); // ✅ Moved before dynamic route
 router.put("/:id", updateTrainer);
 router.delete("/:id", deleteTrainer);
