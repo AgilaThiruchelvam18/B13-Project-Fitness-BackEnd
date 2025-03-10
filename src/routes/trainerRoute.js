@@ -18,7 +18,8 @@ const { protectTrainer } = require("../middleware/authMiddleware");
 // Define routes
 router.get("/", getAllTrainers);
 router.get("/:id", getTrainerById);
-router.get("/me", protectTrainer,getTrainerId);
+// router.get("/me", protectTrainer,getTrainerId);
+router.get("/profile", protectTrainer, getTrainerProfile);
 router.put("/schedule", protectTrainer, manageSchedule); // ✅ Moved before dynamic route
 router.put("/:id", updateTrainer);
 router.delete("/:id", deleteTrainer);

@@ -60,6 +60,18 @@ try {
   res.status(500).json({ message: "Server error" });
 }
 };
+exports.getTrainerProfile = async (req, res) => {
+  try {
+    const trainer = await Trainer.findById(req.user._id);
+    if (!trainer) {
+      return res.status(404).json({ message: "Trainer not found" });
+    }
+    res.json(trainer);
+  } catch (error) {
+    res.status(400).json({ message: "Invalid request", error: error.message });
+  }
+};
+
 
 // Update trainer
 exports.updateTrainer = async (req, res) => {
