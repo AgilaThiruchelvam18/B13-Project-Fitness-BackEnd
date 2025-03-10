@@ -64,7 +64,7 @@ exports.login = async (req, res) => {
 
     const token = jwt.sign({ userId: trainer._id }, process.env.JWT_SECRET, { expiresIn: "1h" });
 
-    res.cookie("customer_jwt", token, {
+    res.cookie("trainer_jwt", token, {
       httpOnly: true,  // ✅ Protects against XSS attacks
       secure: process.env.NODE_ENV === "production",  // ✅ Secure only in production
       sameSite: "None",  // ✅ Required for cross-origin requests
