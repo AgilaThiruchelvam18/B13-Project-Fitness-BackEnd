@@ -64,12 +64,11 @@ exports.login = async (req, res) => {
 
     const token = jwt.sign({ userId: trainer._id }, process.env.JWT_SECRET, { expiresIn: "1h" });
 
-    res
-    .cookie("trainer_jwt", token, {
-      httpOnly: true,
-      secure: true, 
-      sameSite: "None",
-            })
+    res.cookie("customer_jwt", token, {
+      httpOnly: true,  // ✅ Protects against XSS attacks
+      secure: process.env.NODE_ENV === "production",  // ✅ Secure only in production
+      sameSite: "None",  // ✅ Required for cross-origin requests
+    })
       .json({ message: "Login successful", user: { id: trainer._id, email: trainer.email } }); // ✅ Fixed incorrect `User`
   } catch (error) {
     res.status(500).json({ message: "Server error" });

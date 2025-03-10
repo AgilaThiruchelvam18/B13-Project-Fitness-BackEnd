@@ -42,12 +42,11 @@ exports.register = async (req, res) => {
   
       const token = jwt.sign({ userId: user._id }, process.env.JWT_SECRET, { expiresIn: "1h" });
   
-      res
-        .cookie("customer_jwt", token, {
-          httpOnly: true,
-          secure: true,
-          sameSite: "None",
-                })
+      res.cookie("customer_jwt", token, {
+        httpOnly: true,  // ✅ Protects against XSS attacks
+        secure: process.env.NODE_ENV === "production",  // ✅ Secure only in production
+        sameSite: "None",  // ✅ Required for cross-origin requests
+      })
         .json({ message: "Login successful", user: { id: user._id, email: user.email } }); // ✅ Now sends response
     } catch (error) {
       console.error("Login Error:", error); // ✅ Log error for debugging
