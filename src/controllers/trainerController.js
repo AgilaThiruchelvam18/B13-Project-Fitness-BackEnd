@@ -53,7 +53,7 @@ exports.getTrainerById = async (req, res) => {
 };
 exports.getTrainerId = async (req, res) => { 
 try {
-  const trainer = await Trainer.findById(req.user.id);
+  const trainer = await Trainer.findById(req.user._id);
   if (!trainer) return res.status(404).json({ message: "Trainer not found" });
   res.json(trainer);
 } catch (error) {
