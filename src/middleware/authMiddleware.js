@@ -5,6 +5,8 @@ const User = require("../models/User");
 exports.protectCustomer = async (req, res, next) => {
     try {
       const token = req.cookies.customer_jwt; // Get token from HTTP-only cookie
+      console.log("Cookies received:", req.cookies);  // ✅ Debugging line
+
       if (!token) return res.status(401).json({ message: "Unauthorized access" });
   
       const decoded = jwt.verify(token, process.env.JWT_SECRET);
@@ -21,6 +23,8 @@ exports.protectCustomer = async (req, res, next) => {
 exports.protectTrainer = async (req, res, next) => {
   try {
     const token = req.cookies.trainer_jwt; // Get token from HTTP-only cookie
+    console.log("Cookies received:", req.cookies);  // ✅ Debugging line
+
     if (!token) return res.status(401).json({ message: "Unauthorized access" });
 
     const decoded = jwt.verify(token, process.env.JWT_SECRET);

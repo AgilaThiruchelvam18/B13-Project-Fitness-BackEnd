@@ -8,7 +8,6 @@ const cookieParser = require("cookie-parser");
 const cors = require("cors");
 
 const allowedOrigins = [
-  "http://localhost:5173",  // ✅ Development
   "https://fitnesshub-aa.netlify.app", // ✅ Netlify frontend
   "https://fitnesshub-5yf3.onrender.com" 
 ];
