@@ -1,6 +1,6 @@
 const express = require("express");
 const router = express.Router();
-const { protectTrainer } = require("../middleware/authMiddleware");
+const {protectCustomer, protectTrainer } = require("../middleware/authMiddleware");
 const trainerController = require("../controllers/classController");
 const multer = require("multer");
 
@@ -10,5 +10,6 @@ router.post("/", protectTrainer, upload.fields([{ name: "image" }, { name: "vide
 router.put("/classes/:id", protectTrainer, trainerController.updateClass);
 router.delete("/classes/:id", protectTrainer, trainerController.deleteClass);
 router.get("/", protectTrainer, trainerController.getTrainerClasses);
+router.get("/upcomingclasses", protectCustomer, trainerController.AllTrainerClasses);
 
 module.exports = router;

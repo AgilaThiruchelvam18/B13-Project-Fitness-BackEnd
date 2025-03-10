@@ -65,5 +65,12 @@ const getTrainerClasses = async (req, res) => {
     res.status(500).json({ message: error.message });
   }
 };
-
-module.exports = { createClass, updateClass, deleteClass, getTrainerClasses };
+const AllTrainerClasses = async (req, res) => {
+  try {
+    const classes = await Class.find();
+    res.status(200).json(classes);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+module.exports = { createClass, updateClass, deleteClass, getTrainerClasses,AllTrainerClasses };
