@@ -1,12 +1,25 @@
 const mongoose = require("mongoose");
 
-const TimeSlotSchema = new mongoose.Schema({
-  date: { type: String, required: true },
-  day: { type: String, required: true },
-  amPm: { type: String, enum: ["AM", "PM"], required: true },
-  month: { type: String, required: true },
-  weekStart: { type: String, required: true },
-  weekEnd: { type: String, required: true },
+const timeSlotSchema = new mongoose.Schema({
+  date: Date, // Stores the exact date
+  time: String, // Format: "HH:MM AM/PM"
+  recurrence: {
+    type: String,
+    enum: ["one-time", "daily", "weekly", "monthly"],
+    required: true,
+  },
+  recurrenceDetails: {
+    daily: {
+      startDate: Date,
+      endDate: Date,
+    },
+    weekly: [String], // ["Monday", "Wednesday"]
+    monthly: {
+      type: String,
+      enum: ["daily", "alternate", "specific"],
+      specificDay: Number, // 1-31 (if applicable)
+    },
+  },
 });
 
 const ClassSchema = new mongoose.Schema({
@@ -26,3 +39,4 @@ const ClassSchema = new mongoose.Schema({
 }, { timestamps: true });
 
 module.exports = mongoose.model("Class", ClassSchema);
+
