@@ -68,8 +68,8 @@ exports.login = async (req, res) => {
     .cookie("jwt", token, {
       httpOnly: true,
       secure: true, // Ensure this is true only in production with HTTPS
-      sameSite: "None",
-    })
+      sameSite: "Strict",
+            })
       .json({ message: "Login successful", user: { id: trainer._id, email: trainer.email } }); // ✅ Fixed incorrect `User`
   } catch (error) {
     res.status(500).json({ message: "Server error" });
