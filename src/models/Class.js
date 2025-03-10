@@ -32,7 +32,7 @@ const ClassSchema = new mongoose.Schema({
     required: true,
   },
   duration: { type: Number, required: true },
-  timeSlots: [TimeSlotSchema], // ✅ Array of time slot objects
+  timeSlots: [timeSlotSchema], // ✅ Array of time slot objects
   capacity: { type: Number, required: true },
   price: { type: Number, required: true },
   trainer: { type: mongoose.Schema.Types.ObjectId, ref: "Trainer", required: true }, // Link to Trainer
