@@ -60,7 +60,7 @@ try {
   res.status(500).json({ message: "Server error" });
 }
 };
-const getTrainerProfile = async (req, res) => {
+exports.getTrainerProfile = async (req, res) => {
   try {
     const trainer = await Trainer.findById(req.user._id); // Use logged-in user's ID
     if (!trainer) {
