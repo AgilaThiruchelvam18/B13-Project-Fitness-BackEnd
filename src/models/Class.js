@@ -1,21 +1,27 @@
 const mongoose = require("mongoose");
 
-const ClassSchema = new mongoose.Schema(
-  {
-    trainer: { type: mongoose.Schema.Types.ObjectId, ref: "Trainer", required: true }, // Trainer ID (Reference)
-    title: { type: String, required: true }, // Class Name
-    description: { type: String },
-    category: { 
-      type: String, 
-      required: true, 
-      enum: ["Yoga", "Strength Training", "Cardio", "Zumba", "Meditation", "Nutrition"] 
-    }, // Fitness Category
-   timeSlots: [{ day: String, time: String }],
-    duration: { type: Number, required: true }, // Duration in minutes
-    capacity: { type: Number, required: true }, // Maximum Participants
-    price: { type: Number, required: true }, // Price in currency
+const TimeSlotSchema = new mongoose.Schema({
+  date: { type: String, required: true },
+  day: { type: String, required: true },
+  amPm: { type: String, enum: ["AM", "PM"], required: true },
+  month: { type: String, required: true },
+  weekStart: { type: String, required: true },
+  weekEnd: { type: String, required: true },
+});
+
+const ClassSchema = new mongoose.Schema({
+  title: { type: String, required: true },
+  description: { type: String, required: true },
+  category: {
+    type: String,
+    enum: ["Yoga", "Strength Training", "Cardio", "Meditation", "Zumba", "Nutrition"],
+    required: true,
   },
-  { timestamps: true } // Adds createdAt & updatedAt
-);
+  duration: { type: Number, required: true },
+  timeSlots: [TimeSlotSchema], // ✅ Array of time slot objects
+  capacity: { type: Number, required: true },
+  price: { type: Number, required: true },
+  trainer: { type: mongoose.Schema.Types.ObjectId, ref: "Trainer", required: true }, // Link to Trainer
+}, { timestamps: true });
 
 module.exports = mongoose.model("Class", ClassSchema);

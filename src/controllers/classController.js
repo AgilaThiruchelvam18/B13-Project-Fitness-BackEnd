@@ -1,41 +1,30 @@
 const Class = require("../models/Class");
 
 // ✅ Create a new class
-const createClass = async (req, res) => {
+exports.createClass = async (req, res) => {
   try {
-    console.log("Request Body:", req.body);
-    console.log("Uploaded Files:", req.files);
+    const { title, description, category, duration, timeSlots, capacity, price, trainer } = req.body;
 
-    const { title, description, category, timeSlots, duration, capacity, price } = req.body;
-
-    // Validate required fields
-    if (!title || !category || !duration || !capacity || !price) {
-      return res.status(400).json({ message: "Please provide all required fields." });
+    // Ensure timeSlots is an array
+    if (!Array.isArray(timeSlots) || timeSlots.length === 0) {
+      return res.status(400).json({ error: "Time slots must be a non-empty array" });
     }
 
-    // Convert timeSlots from string to array of objects (if necessary)
-    let formattedTimeSlots = [];
-    if (typeof timeSlots === "string") {
-      formattedTimeSlots = JSON.parse(timeSlots);
-    } else if (Array.isArray(timeSlots)) {
-      formattedTimeSlots = timeSlots;
-    }
-
-    const newClass = await Class.create({
-      trainer: req.user._id, // Trainer ID from auth middleware
+    const newClass = new Class({
       title,
       description,
       category,
-      timeSlots: formattedTimeSlots,
       duration,
+      timeSlots,
       capacity,
       price,
+      trainer, // Ensure trainer ID is valid
     });
 
+    await newClass.save();
     res.status(201).json(newClass);
   } catch (error) {
-    console.error("Error creating class:", error);
-    res.status(500).json({ message: error.message });
+    res.status(500).json({ error: "Failed to create class", details: error.message });
   }
 };
 
