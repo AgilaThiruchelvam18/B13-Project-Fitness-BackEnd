@@ -11,6 +11,7 @@ const TimeSlotSchema = new mongoose.Schema({
 
 const ClassSchema = new mongoose.Schema({
   title: { type: String, required: true },
+  trainer: { type: mongoose.Schema.Types.ObjectId, ref: "Trainer", required: true },
   description: { type: String, required: true },
   category: {
     type: String,
