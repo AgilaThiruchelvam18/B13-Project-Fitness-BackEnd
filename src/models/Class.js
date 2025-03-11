@@ -14,11 +14,6 @@ const timeSlotSchema = new mongoose.Schema({
       endDate: Date,
     },
     weekly: [String], // ["Monday", "Wednesday"]
-    monthly: {
-      type: String,
-      enum: ["daily", "alternate", "specific"],
-      specificDay: Number, // 1-31 (if applicable)
-    },
   },
 });
 
