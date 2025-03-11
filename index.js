@@ -8,7 +8,7 @@ const cookieParser = require("cookie-parser");
 const cors = require("cors");
 
 app.use(cors({
-  origin: ["https://fitnesshub-aa.netlify.app", "https://fitnesshub-5yf3.onrender.com","https://localhost:5173"], // ✅ Correct array syntax
+  origin: ["https://fitnesshub-aa.netlify.app", "https://fitnesshub-5yf3.onrender.com","http://localhost:5173"], // ✅ Correct array syntax
   credentials: true, // ✅ Allow cookies and authentication headers
   methods: ["GET", "POST", "PUT", "DELETE"], // ✅ Allowed HTTP methods
   allowedHeaders: ["Content-Type", "Authorization"] // ✅ Allowed headers
