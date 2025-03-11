@@ -6,10 +6,10 @@ const Class = require("../models/Class");
 // ✅ Create a new booking
 exports.createBooking = async (req, res) => {
   try {
-    const { classId, trainer, category, price } = req.body;
+    const { classId, trainerId, category, price } = req.body;
 
     // ✅ Ensure all required fields are provided
-    if (!classId || !trainer || !category || !price) {
+    if (!classId || !trainerId || !category || !price) {
       return res.status(400).json({ message: "All fields are required" });
     }
 
@@ -20,8 +20,8 @@ exports.createBooking = async (req, res) => {
     }
 
     // ✅ Check if trainer exists
-    const trainerPerson = await Trainer.findById(trainer);
-    if (!trainerPerson) {
+    const trainer = await Trainer.findById(trainerId);
+    if (!trainer) {
       return res.status(404).json({ message: "Trainer not found" });
     }
 
@@ -40,7 +40,7 @@ exports.createBooking = async (req, res) => {
     const newBooking = new Booking({
       user: req.user._id, // Extracted from `protectCustomer` middleware
       classId,
-      trainer: trainer,
+      trainer: trainerId,
       category,
       price,
       status: "Booked",
