@@ -7,6 +7,7 @@ const Class = require("../models/Class");
 exports.createBooking = async (req, res) => {
   try {
     const { classId, trainerId, category, price } = req.body;
+    console.log("Trainer ID Received:", trainerId);
 
     // ✅ FIX: Ensure all required fields are provided
     if (!classId || !trainerId || !category || !price) {
@@ -24,6 +25,7 @@ exports.createBooking = async (req, res) => {
     if (!trainer) {
       return res.status(404).json({ message: "Trainer not found" });
     }
+    console.log("Trainer details:", trainer);
 
     // ✅ FIX: Prevent duplicate bookings
     const existingBooking = await Booking.findOne({
