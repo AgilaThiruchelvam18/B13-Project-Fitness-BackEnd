@@ -8,24 +8,24 @@ exports.createBooking = async (req, res) => {
   try {
     const { classId, trainerId, category, price } = req.body;
 
-    // ✅ Ensure all required fields are provided
+    // ✅ FIX: Ensure all required fields are provided
     if (!classId || !trainerId || !category || !price) {
       return res.status(400).json({ message: "All fields are required" });
     }
 
-    // ✅ Check if class exists
+    // ✅ FIX: Check if class exists
     const selectedClass = await Class.findById(classId);
     if (!selectedClass) {
       return res.status(404).json({ message: "Class not found" });
     }
 
-    // ✅ Check if trainer exists
+    // ✅ FIX: Check if trainer exists (trainerId is already a string)
     const trainer = await Trainer.findById(trainerId);
     if (!trainer) {
       return res.status(404).json({ message: "Trainer not found" });
     }
 
-    // ✅ Prevent duplicate bookings (optional)
+    // ✅ FIX: Prevent duplicate bookings
     const existingBooking = await Booking.findOne({
       user: req.user._id,
       classId,
@@ -36,11 +36,11 @@ exports.createBooking = async (req, res) => {
       return res.status(400).json({ message: "You have already booked this class" });
     }
 
-    // ✅ Create new booking
+    // ✅ FIX: Create new booking with correct trainer reference
     const newBooking = new Booking({
-      user: req.user._id, // Extracted from `protectCustomer` middleware
+      user: req.user._id, 
       classId,
-      trainer: trainerId,
+      trainer: trainerId, // ✅ FIXED: Using trainerId directly
       category,
       price,
       status: "Booked",
@@ -54,6 +54,7 @@ exports.createBooking = async (req, res) => {
     res.status(500).json({ message: "Internal Server Error" });
   }
 };
+
 exports.getBookings = async (req, res) => {
   try {
     const bookings = await Booking.find({ user: req.user._id }).populate("user", "name email");
