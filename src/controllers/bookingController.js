@@ -6,7 +6,7 @@ const Class = require("../models/Class");
 // ✅ Create a new booking
 exports.getBookings = async (req, res) => {
   try {
-    const bookings = await Booking.find({ trainer: req.user.id }).populate("user", "name email");
+    const bookings = await Booking.find({ trainer: req.user._id }).populate("user", "name email");
     res.status(200).json(bookings);
   } catch (error) {
     res.status(500).json({ message: error.message });
