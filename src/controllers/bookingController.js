@@ -6,10 +6,10 @@ const Class = require("../models/Class");
 // ✅ Create a new booking
 exports.createBooking = async (req, res) => {
   try {
-    const { classId, trainerId, category, price } = req.body;
+    const { classId, trainer, category, price } = req.body;
 
     // ✅ Ensure all required fields are provided
-    if (!classId || !trainerId || !category || !price) {
+    if (!classId || !trainer || !category || !price) {
       return res.status(400).json({ message: "All fields are required" });
     }
 
@@ -20,8 +20,8 @@ exports.createBooking = async (req, res) => {
     }
 
     // ✅ Check if trainer exists
-    const trainer = await Trainer.findById(trainerId);
-    if (!trainer) {
+    const trainerPerson = await Trainer.findById(trainer);
+    if (!trainerPerson) {
       return res.status(404).json({ message: "Trainer not found" });
     }
 
@@ -40,7 +40,7 @@ exports.createBooking = async (req, res) => {
     const newBooking = new Booking({
       user: req.user._id, // Extracted from `protectCustomer` middleware
       classId,
-      trainer: trainerId,
+      trainer: trainer,
       category,
       price,
       status: "Booked",
@@ -56,7 +56,7 @@ exports.createBooking = async (req, res) => {
 };
 exports.getBookings = async (req, res) => {
   try {
-    const bookings = await Booking.find({ trainer: req.user._id }).populate("user", "name email");
+    const bookings = await Booking.find({ user: req.user._id }).populate("user", "name email");
     res.status(200).json(bookings);
   } catch (error) {
     res.status(500).json({ message: error.message });
