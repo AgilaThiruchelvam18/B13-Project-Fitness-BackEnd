@@ -32,7 +32,8 @@ const TrainerSchema = new mongoose.Schema({
   resetToken: { type: String, default: null },
   resetTokenExpiry: { type: Date, default: null },
   isVerified: { type: Boolean, default: false }, // Email verification
-  createdAt: { type: Date, default: Date.now }
+  createdAt: { type: Date, default: Date.now },
+  classes: [{ type: mongoose.Schema.Types.ObjectId, ref: "Class" }]
 });
 
 module.exports = mongoose.models.Trainer || mongoose.model("Trainer", TrainerSchema);
