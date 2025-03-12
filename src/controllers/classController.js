@@ -4,17 +4,13 @@ const Trainer = require("../models/Trainer");
 // ✅ Create a new class
 const createClass = async (req, res) => {
   try {
-    const { title, description, category, duration, timeSlots, capacity, price, trainerId } = req.body;
-    const trainer = await Trainer.findById(trainerId);
-    if (!trainer) {
-      return res.status(404).json({ message: "Trainer not found" });
-    }
-
+    const { title, description, category, duration, timeSlots, capacity, price, trainer } = req.body;
     // Ensure timeSlots is an array
+    const trainerDetails = await Trainer.findById(trainer);
+
     if (!Array.isArray(timeSlots) || timeSlots.length === 0) {
       return res.status(400).json({ error: "Time slots must be a non-empty array" });
     }
-
     const newClass = new Class({
       title,
       description,
@@ -23,23 +19,22 @@ const createClass = async (req, res) => {
       timeSlots,
       capacity,
       price,
-      trainerId, // Ensure trainer ID is valid
+      trainer, // Ensure trainer ID is valid
     });
-
     const savedClass = await newClass.save();
 
-    // ✅ Push new class ID to trainer's classes array and save trainer
-    trainer.classes.push(savedClass._id);
-    await trainer.save(); // Ensure trainer document is updated
+// ✅ Push new class ID to trainer's classes array and save trainer
+trainerDetails.classes.push(savedClass._id);
+await trainerDetails.save(); // Ensure trainer document is updated
 
     res.status(201).json(savedClass);
- 
   } catch (error) {
     res.status(500).json({ error: "Failed to create class", details: error.message });
   }
 };
 
-// ✅ Update a class
+
+// // ✅ Update a class
 const updateClass = async (req, res) => {
   try {
     const { id } = req.params;
@@ -89,7 +84,7 @@ const getTrainerClasses = async (req, res) => {
 // ✅ Get all upcoming classes (for customers)
 const AllTrainerClasses = async (req, res) => {
   try {
-    const classes = await Class.find().populate("trainer", "userName email ratings");
+    const classes = await Class.find();
     res.status(200).json(classes);
   } catch (error) {
     console.error("Error fetching all classes:", error);
