@@ -1,5 +1,5 @@
 const Class = require("../models/Class");
-const Trainer = require("../models/trainer.model");
+const Trainer = require("../models/Trainer");
 
 // ✅ Create a new class
 const createClass = async (req, res) => {
