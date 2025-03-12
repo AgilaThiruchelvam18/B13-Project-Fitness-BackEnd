@@ -30,7 +30,6 @@ const ClassSchema = new mongoose.Schema({
   timeSlots: [timeSlotSchema], // ✅ Array of time slot objects
   capacity: { type: Number, required: true },
   price: { type: Number, required: true },
-  trainer: { type: mongoose.Schema.Types.ObjectId, ref: "Trainer", required: true }, // Link to Trainer
 }, { timestamps: true });
 
 module.exports = mongoose.model("Class", ClassSchema);
