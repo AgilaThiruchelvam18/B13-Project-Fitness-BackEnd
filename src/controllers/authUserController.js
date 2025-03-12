@@ -105,7 +105,7 @@ exports.resetPassword = async (req, res) => {
 
 exports.getUserProfile = async (req, res) => {
   try {
-    const user = req.user.username;
+    const user = req.user.userName;
    
     res.json(user);
   } catch (error) {
