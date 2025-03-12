@@ -1,32 +1,16 @@
 const Class = require("../models/Class");
 const Trainer = require("../models/Trainer");
 
+// ✅ Create a new class
 const createClass = async (req, res) => {
   try {
-    console.log("📩 Received request body:", req.body); // Log request payload
-
     const { title, description, category, duration, timeSlots, capacity, price, trainer } = req.body;
-
-    if (!trainer) {
-      console.error("❌ Trainer ID is missing!");
-      return res.status(400).json({ error: "Trainer ID is required" });
-    }
-
-    // Check if trainer exists
+    // Ensure timeSlots is an array
     const trainerDetails = await Trainer.findById(trainer);
-    console.log("Trainer Details Before Update:", trainerDetails);
 
-    if (!trainerDetails) {
-      console.error("❌ Trainer not found with ID:", trainer);
-      return res.status(404).json({ error: "Trainer not found" });
-    }
-
-    // Ensure timeSlots is a non-empty array
     if (!Array.isArray(timeSlots) || timeSlots.length === 0) {
       return res.status(400).json({ error: "Time slots must be a non-empty array" });
     }
-
-    // Create new class
     const newClass = new Class({
       title,
       description,
@@ -35,28 +19,20 @@ const createClass = async (req, res) => {
       timeSlots,
       capacity,
       price,
-      trainer, // Trainer ID stored here
+      trainer, // Ensure trainer ID is valid
     });
-
     const savedClass = await newClass.save();
-    console.log("✅ Class created successfully:", savedClass);
 
-    // Update trainer
-    const updatedTrainer = await Trainer.findByIdAndUpdate(
-      trainer, 
-      { $push: { classes: savedClass._id } }, 
-      { new: true }
-    );
-    
-    console.log("Trainer Details After Update:", updatedTrainer);
-    console.log("✅ Trainer updated with new class");
+// ✅ Push new class ID to trainer's classes array and save trainer
+trainerDetails.classes.push(savedClass._id);
+await trainerDetails.save(); // Ensure trainer document is updated
 
     res.status(201).json(savedClass);
   } catch (error) {
-    console.error("❌ Error creating class:", error);
     res.status(500).json({ error: "Failed to create class", details: error.message });
   }
 };
+
 
 // // ✅ Update a class
 const updateClass = async (req, res) => {
