@@ -39,9 +39,9 @@ const createClass = async (req, res) => {
     const savedClass = await newClass.save();
     console.log("✅ Class created successfully:", savedClass);
 
-    // Update trainer's classes array
-    trainerDetails.classes.push(savedClass._id);
-    await trainerDetails.save();
+    // Update trainer
+    await Trainer.findByIdAndUpdate(trainer, { $push: { classes: savedClass._id } }, { new: true });
+
     console.log("✅ Trainer updated with new class");
 
     res.status(201).json(savedClass);
