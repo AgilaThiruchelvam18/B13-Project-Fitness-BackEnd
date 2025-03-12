@@ -14,6 +14,8 @@ const createClass = async (req, res) => {
 
     // Check if trainer exists
     const trainerDetails = await Trainer.findById(trainer);
+    console.log("Trainer Details Before Update:", trainerDetails);
+
     if (!trainerDetails) {
       console.error("❌ Trainer not found with ID:", trainer);
       return res.status(404).json({ error: "Trainer not found" });
@@ -40,8 +42,13 @@ const createClass = async (req, res) => {
     console.log("✅ Class created successfully:", savedClass);
 
     // Update trainer
-    await Trainer.findByIdAndUpdate(trainer, { $push: { classes: savedClass._id } }, { new: true });
-
+    const updatedTrainer = await Trainer.findByIdAndUpdate(
+      trainer, 
+      { $push: { classes: savedClass._id } }, 
+      { new: true }
+    );
+    
+    console.log("Trainer Details After Update:", updatedTrainer);
     console.log("✅ Trainer updated with new class");
 
     res.status(201).json(savedClass);
