@@ -1,9 +1,14 @@
 const Class = require("../models/Class");
+const Trainer = require("../models/trainer.model");
 
 // ✅ Create a new class
 const createClass = async (req, res) => {
   try {
-    const { title, description, category, duration, timeSlots, capacity, price, trainer } = req.body;
+    const { title, description, category, duration, timeSlots, capacity, price, trainerId } = req.body;
+    const trainer = await Trainer.findById(trainerId);
+    if (!trainer) {
+      return res.status(404).json({ message: "Trainer not found" });
+    }
 
     // Ensure timeSlots is an array
     if (!Array.isArray(timeSlots) || timeSlots.length === 0) {
@@ -18,11 +23,17 @@ const createClass = async (req, res) => {
       timeSlots,
       capacity,
       price,
-      trainer, // Ensure trainer ID is valid
+      trainerId, // Ensure trainer ID is valid
     });
 
-    await newClass.save();
-    res.status(201).json(newClass);
+    const savedClass = await newClass.save();
+
+    // ✅ Push new class ID to trainer's classes array and save trainer
+    trainer.classes.push(savedClass._id);
+    await trainer.save(); // Ensure trainer document is updated
+
+    res.status(201).json(savedClass);
+ 
   } catch (error) {
     res.status(500).json({ error: "Failed to create class", details: error.message });
   }
