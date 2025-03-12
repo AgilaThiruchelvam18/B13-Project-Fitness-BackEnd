@@ -59,7 +59,7 @@ exports.createBooking = async (req, res) => {
 
 exports.getBookings = async (req, res) => {
   try {
-    const bookings = await Booking.find({ user: req.user._id }).populate("trainer", "userName email");
+    const bookings = await Booking.find({ user: req.user._id }).populate("user", "name email");
     res.status(200).json(bookings);
   } catch (error) {
     res.status(500).json({ message: error.message });
