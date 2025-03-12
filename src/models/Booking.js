@@ -7,7 +7,7 @@ const bookingSchema = new mongoose.Schema(
     trainer: { type: mongoose.Schema.Types.ObjectId, ref: "Trainer", required: true },
     category: { type: String, required: true }, // Yoga, Cardio, etc.
     price: { type: Number, required: true }, // Price of the class
-    status: { type: String, enum: ["Booked", "Canceled", "Completed"], default: "Booked" }, // Booking status
+    status: { type: String, enum: ["Booked", "Cancelled", "Completed"], default: "Booked" }, // Booking status
   },
   { timestamps: true }
 );
