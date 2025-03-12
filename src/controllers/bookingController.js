@@ -69,3 +69,31 @@ exports.getBookings = async (req, res) => {
   }
 };
 //    populate("trainer", "userName email ratings");
+
+// 🔥 Update Booking
+exports.cancelBooking = async (req, res) => {
+  try {
+    const { id } = req.params; // Booking ID
+
+    // 🔍 Find booking by ID
+    let booking = await Booking.findById(id);
+
+    if (!booking) {
+      return res.status(404).json({ message: "Booking not found" });
+    }
+
+    // 🔐 Ensure only the user who booked it can cancel
+    if (booking.user.toString() !== req.user.id) {
+      return res.status(403).json({ message: "Not authorized to cancel this booking" });
+    }
+
+    // ✅ Update the status to "Cancelled"
+    booking.status = "Cancelled";
+    await booking.save();
+
+    res.json({ message: "Booking cancelled successfully", booking });
+  } catch (error) {
+    console.error("Error cancelling booking:", error);
+    res.status(500).json({ message: "Server error" });
+  }
+};

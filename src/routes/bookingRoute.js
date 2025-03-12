@@ -6,7 +6,7 @@ const { protectCustomer, protectTrainer } = require("../middleware/authMiddlewar
 router.post("/",protectCustomer, bookingController.createBooking);
 // router.get("/", protectCustomer, bookingController.getMyBookings);
 // router.get("/:id",protectCustomer,  bookingController.getBookingById);
-// router.put("/:id",protectCustomer,  bookingController.updateBooking);
+router.put("/:id/cancel", protectCustomer, bookingController.cancelBooking);
 // router.delete("/:id",protectCustomer,  bookingController.cancelBooking);
 router.get("/", protectCustomer, bookingController.getBookings);
 
