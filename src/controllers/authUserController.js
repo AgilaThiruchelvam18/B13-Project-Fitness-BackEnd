@@ -105,9 +105,7 @@ exports.resetPassword = async (req, res) => {
 
 exports.getUserProfile = async (req, res) => {
   try {
-    const user = req.user.userName;
-   
-    res.json(user);
+    res.json(req.user);
   } catch (error) {
     res.status(500).json({ message: "Server Error", error: error.message });
   }
