@@ -78,7 +78,7 @@ const getTrainerClasses = async (req, res) => {
 // ✅ Get all upcoming classes (for customers)
 const AllTrainerClasses = async (req, res) => {
   try {
-    const classes = await Class.find();
+    const classes = await Class.find().populate("trainer", "userName email ratings");
     res.status(200).json(classes);
   } catch (error) {
     console.error("Error fetching all classes:", error);
