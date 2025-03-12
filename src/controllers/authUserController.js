@@ -105,7 +105,7 @@ exports.resetPassword = async (req, res) => {
 
 exports.getUserProfile = async (req, res) => {
   try {
-    const user = await User.findById(req.user.userId).select("-password");
+    const user = await User.findById(req.user._id).select("-password");
     console.log("user",user);
     res.json(user);
   } catch (error) {
