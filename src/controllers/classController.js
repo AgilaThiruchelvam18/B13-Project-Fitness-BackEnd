@@ -26,7 +26,11 @@ const createClass = async (req, res) => {
 // ✅ Push new class ID to trainer's classes array and save trainer
 trainerDetails.classes.push(savedClass._id);
 await trainerDetails.save(); // Ensure trainer document is updated
-
+// const updatedTrainer = await Trainer.findByIdAndUpdate(
+//   trainer, 
+//   { $push: { classes: savedClass._id } }, 
+//   { new: true }
+// );
     res.status(201).json(savedClass);
   } catch (error) {
     res.status(500).json({ error: "Failed to create class", details: error.message });
