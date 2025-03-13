@@ -2,6 +2,7 @@ const Booking = require("../models/Booking");
 const Trainer = require("../models/Trainer");
 const User = require("../models/User");
 const Class = require("../models/Class");
+const { generateRecommendations } = require("./recommendationController");
 
 // ✅ Create a new booking
 exports.createBooking = async (req, res) => {
@@ -49,6 +50,7 @@ exports.createBooking = async (req, res) => {
     });
 
     await newBooking.save();
+    await axios.post(`https://fitnesshub-5yf3.onrender.com/api/recommendations/${req.user._id}`);
 
     res.status(201).json({ message: "Booking successful", booking: newBooking });
   } catch (error) {
