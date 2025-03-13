@@ -7,36 +7,25 @@ const { generateRecommendations } = require("./recommendationController");
 // ✅ Create a new booking
 exports.createBooking = async (req, res) => {
   try {
-    const { classId, trainerId, category, price } = req.body;
-    console.log("Trainer ID Received:", trainerId);
+    const { class: classId, trainerId, category, price } = req.body; // ✅ Change `classId` to `class`
 
-    // ✅ Ensure user is authenticated
-    if (!req.user || !req.user._id) {
-      return res.status(401).json({ message: "Unauthorized" });
-    }
-
-    // ✅ Validate input fields
     if (!classId || !trainerId || !category || !price) {
       return res.status(400).json({ message: "All fields are required" });
     }
 
-    // ✅ Check if class exists
     const selectedClass = await Class.findById(classId);
     if (!selectedClass) {
       return res.status(404).json({ message: "Class not found" });
     }
 
-    // ✅ Check if trainer exists
     const trainer = await Trainer.findById(trainerId);
     if (!trainer) {
       return res.status(404).json({ message: "Trainer not found" });
     }
-    console.log("Trainer details:", trainer);
 
-    // ✅ Prevent duplicate bookings
     const existingBooking = await Booking.findOne({
       user: req.user._id,
-      class: classId, // ✅ Use 'class' instead of 'classId' to match schema
+      class: classId, // ✅ Use `class` instead of `classId`
       status: "Booked",
     });
 
@@ -44,10 +33,9 @@ exports.createBooking = async (req, res) => {
       return res.status(400).json({ message: "You have already booked this class" });
     }
 
-    // ✅ Create new booking
     const newBooking = new Booking({
       user: req.user._id,
-      class: classId,
+      class: classId, // ✅ Use `class`
       trainer: trainerId,
       category,
       price,
@@ -55,23 +43,21 @@ exports.createBooking = async (req, res) => {
     });
 
     await newBooking.save();
-
-    // ✅ Instead of making an axios call, trigger recommendations function directly
-    await generateRecommendations(req, res); 
-
+    await generateRecommendations(req, res); // Generate recommendations after booking
     res.status(201).json({ message: "Booking successful", booking: newBooking });
   } catch (error) {
     console.error("Booking Error:", error);
-    res.status(500).json({ message: "Internal Server Error", error: error.message });
+    res.status(500).json({ message: "Internal Server Error" });
   }
 };
+
 
 exports.getBookings = async (req, res) => {
   try {
     const bookings = await Booking.find({ user: req.user._id })
     .populate("user", "userName email") // ✅ Populating user
     .populate("trainer", "userName email ratings")
-    .populate("classId")// ✅ Populating trainer
+    .populate("class")// ✅ Populating trainer
     res.status(200).json(bookings);
   } catch (error) {
     res.status(500).json({ message: error.message });

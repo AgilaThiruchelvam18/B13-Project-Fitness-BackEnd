@@ -47,6 +47,8 @@ exports.getRecommendations = async (req, res) => {
     const recommendations = await Recommendation.findOne({ user: req.params.userId })
       .populate("recommendedClasses");
 
+    console.log("Recommendations found:", recommendations); // ✅ Debugging log
+
     if (!recommendations) {
       return res.status(404).json({ message: "No recommendations found" });
     }
