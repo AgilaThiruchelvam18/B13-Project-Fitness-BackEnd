@@ -7,7 +7,7 @@ const { generateRecommendations } = require("./recommendationController");
 // ✅ Create a new booking
 exports.createBooking = async (req, res) => {
   try {
-    const { class: classId, trainerId, category, price } = req.body; // ✅ Change `classId` to `class`
+    const { classId, trainerId, category, price } = req.body; // ✅ Change `classId` to `class`
 
     if (!classId || !trainerId || !category || !price) {
       return res.status(400).json({ message: "All fields are required" });
@@ -25,7 +25,7 @@ exports.createBooking = async (req, res) => {
 
     const existingBooking = await Booking.findOne({
       user: req.user._id,
-      class: classId, // ✅ Use `class` instead of `classId`
+      classId: classId, // ✅ Use `class` instead of `classId`
       status: "Booked",
     });
 
@@ -35,7 +35,7 @@ exports.createBooking = async (req, res) => {
 
     const newBooking = new Booking({
       user: req.user._id,
-      class: classId, // ✅ Use `class`
+      classId: classId, // ✅ Use `class`
       trainer: trainerId,
       category,
       price,
@@ -57,7 +57,7 @@ exports.getBookings = async (req, res) => {
     const bookings = await Booking.find({ user: req.user._id })
     .populate("user", "userName email") // ✅ Populating user
     .populate("trainer", "userName email ratings")
-    .populate("class")// ✅ Populating trainer
+    .populate("classId")// ✅ Populating trainer
     res.status(200).json(bookings);
   } catch (error) {
     res.status(500).json({ message: error.message });

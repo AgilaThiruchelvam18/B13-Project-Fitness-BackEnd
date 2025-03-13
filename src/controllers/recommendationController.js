@@ -7,14 +7,14 @@ exports.generateRecommendations = async (req, res) => {
     const userId = req.params.userId;
 
     // Fetch user's past bookings and populate class details
-    const bookings = await Booking.find({ user: userId }).populate("class");
+    const bookings = await Booking.find({ user: userId }).populate("classId");
 
     if (!bookings.length) {
       return res.status(404).json({ message: "No past bookings found" });
     }
 
     // Extract unique class categories from past bookings
-    const classCategories = [...new Set(bookings.map(b => b.class.category))];
+    const classCategories = [...new Set(bookings.map(b => b.classId.category))];
 
     if (!classCategories.length) {
       return res.status(404).json({ message: "No class categories found from past bookings" });
