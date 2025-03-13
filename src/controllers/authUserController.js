@@ -111,25 +111,19 @@ exports.getUserProfile = async (req, res) => {
   }
 };
 
-exports.passwordChange = async (req, res) => {
+exports.changePassword = async (req, res) => {
   try {
     const { currentPassword, newPassword } = req.body;
-console.log("req.body",req.body);
-console.log("req.user",req.user);
-console.log("currentPassword",currentPassword);
-    if (!currentPassword || !newPassword) {
-      return res.status(400).json({ message: "Please provide both current and new passwords." });
+    const user = await User.findById(req.user.id);
+
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
     }
 
-    const user = await User.findById(req.user._id);
-    if (!user) {
-      return res.status(404).json({ message: "User not found." });
-    }
-console.log("user",user);
-    // Check if current password is correct
+    // Check if the current password matches
     const isMatch = await bcrypt.compare(currentPassword, user.password);
     if (!isMatch) {
-      return res.status(400).json({ message: "Current password is incorrect." });
+      return res.status(400).json({ message: "Incorrect current password" });
     }
 
     // Hash new password
@@ -140,9 +134,8 @@ console.log("user",user);
     user.password = hashedPassword;
     await user.save();
 
-    res.status(200).json({ message: "Password updated successfully." });
+    res.status(200).json({ message: "Password changed successfully" });
   } catch (error) {
-    console.error("Error updating password:", error);
-    res.status(500).json({ message: "Internal Server Error" });
+    res.status(500).json({ message: "Server error", error });
   }
 };

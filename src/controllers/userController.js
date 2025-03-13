@@ -27,13 +27,13 @@ exports.updateUser = async (req, res) => {
     console.log("req.body",req.body);
     console.log("req.params.id",req.params.id);
 
-    // if(req.body.password)
-    // {
-    //   const salt = await bcrypt.genSalt(10);
-    //         const hashedPassword = await bcrypt.hash(req.body.password, salt);
-    //         req.body.password=hashedPassword;
+    if(req.body.password)
+    {
+      const salt = await bcrypt.genSalt(10);
+            const hashedPassword = await bcrypt.hash(req.body.password, salt);
+            req.body.password=hashedPassword;
            
-    // }
+    }
     const updatedUser = await User.findByIdAndUpdate(req.params.id, req.body, { new: true });
     console.log("updatedUser",updatedUser);
     res.status(200).json(updatedUser);
