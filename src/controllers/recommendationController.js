@@ -19,7 +19,7 @@ exports.generateRecommendations = async (userId) => {
     }
 
     // Find recommended classes
-    const recommendedClasses = await Class.find({ category: { $in: classCategories } }).limit(5);
+    const recommendedClasses = await Class.find({ category: { $in: classCategories } }).populate("trainer").limit(5);
 
     // Save/update recommendations in the database
     await Recommendation.findOneAndUpdate(
