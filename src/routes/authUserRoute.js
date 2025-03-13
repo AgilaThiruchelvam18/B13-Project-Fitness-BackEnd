@@ -5,7 +5,8 @@ const {
   resetPassword,
   getUserProfile,
   login,
-  register
+  register,
+  passwordChange
 } = require("../controllers/authUserController");
 const { protectCustomer, protectTrainer } = require("../middleware/authMiddleware");
 
@@ -56,5 +57,5 @@ router.post(
 );
 
 router.get("/profile", protectCustomer, getUserProfile);
-
+router.put("/change-password", protectCustomer,passwordChange);
 module.exports = router;
