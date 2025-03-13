@@ -57,5 +57,5 @@ router.post(
 );
 
 router.get("/profile", protectCustomer, getUserProfile);
-router.put("/change-password", protectCustomer,passwordChange);
+// router.put("/change-password", protectCustomer,passwordChange);
 module.exports = router;
