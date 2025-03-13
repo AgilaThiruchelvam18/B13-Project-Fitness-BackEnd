@@ -6,7 +6,7 @@ exports.generateRecommendations = async (userId) => {
   try {
     // Fetch user's past bookings
     const bookings = await Booking.find({ user: userId }).populate("classId").populate("trainer");
-
+console.log("Bookings:", bookings);
     if (!bookings.length) {
       return;
     }
@@ -37,7 +37,7 @@ exports.getRecommendations = async (req, res) => {
   try {
     const recommendations = await Recommendation.findOne({ user: req.params.userId })
       .populate("recommendedClasses");
-
+console.log("Recommendations:", recommendations);
     if (!recommendations) {
       // ✅ Instead of error, return empty recommendations
       return res.status(200).json({ message: "No recommendations yet", recommendations: [] });
