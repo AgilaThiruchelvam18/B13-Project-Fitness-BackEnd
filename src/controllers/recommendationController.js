@@ -2,11 +2,15 @@ const Recommendation = require("../models/Recommendation");
 const Booking = require("../models/Booking");
 const Class = require("../models/Class");
 
+const Recommendation = require("../models/Recommendation");
+const Booking = require("../models/Booking");
+const Class = require("../models/Class");
+
 exports.generateRecommendations = async (req, res) => {
   try {
     const userId = req.params.userId;
 
-    // Fetch user's past bookings
+    // Fetch user's past bookings and populate class details
     const bookings = await Booking.find({ user: userId }).populate("class");
 
     if (!bookings.length) {
@@ -16,19 +20,27 @@ exports.generateRecommendations = async (req, res) => {
     // Extract unique class categories from past bookings
     const classCategories = [...new Set(bookings.map(b => b.class.category))];
 
+    if (!classCategories.length) {
+      return res.status(404).json({ message: "No class categories found from past bookings" });
+    }
+
     // Find classes that match user's interests
     const recommendedClasses = await Class.find({ category: { $in: classCategories } }).limit(10);
 
-    // Store recommendations in the database
+    if (!recommendedClasses.length) {
+      return res.status(404).json({ message: "No recommendations available" });
+    }
+
+    // Store recommendations in the database (ensure only IDs are stored)
     const recommendation = await Recommendation.findOneAndUpdate(
       { user: userId },
-      { recommendedClasses },
+      { recommendedClasses: recommendedClasses.map(c => c._id) },
       { upsert: true, new: true }
     );
 
-    res.json(recommendation);
+    res.status(200).json(recommendation);
   } catch (err) {
-    console.error(err);
+    console.error("Error generating recommendations:", err);
     res.status(500).json({ message: "Error generating recommendations", error: err.message });
   }
 };
