@@ -36,8 +36,10 @@ console.log("Bookings:", bookings);
 exports.getRecommendations = async (req, res) => {
   try {
     const recommendations = await Recommendation.findOne({ user: req.params.userId })
-      .populate("recommendedClasses")
-      .populate("trainer");
+    .populate({
+      path: "recommendedClasses",
+      populate: { path: "trainer", select: "userName" }, // ✅ Populate trainer's username
+    });
 console.log("Recommendations:", recommendations);
     if (!recommendations) {
       // ✅ Instead of error, return empty recommendations
