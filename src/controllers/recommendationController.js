@@ -7,24 +7,28 @@ exports.generateRecommendations = async (req, res) => {
     const userId = req.params.userId;
 
     // Fetch user's past bookings
-    const bookings = await Booking.find({ user: userId }).populate("trainer");
+    const bookings = await Booking.find({ user: userId }).populate("class");
 
-    if (!bookings.length) return res.status(404).json({ message: "No past bookings found" });
+    if (!bookings.length) {
+      return res.status(404).json({ message: "No past bookings found" });
+    }
 
-    // Extract unique class types from past bookings
-    const classTypes = [...new Set(bookings.map(b => b.class))];
+    // Extract unique class categories from past bookings
+    const classCategories = [...new Set(bookings.map(b => b.class.category))];
 
-    // Find trainers offering similar class types
-    const recommendedTrainers = await Trainer.find({ expertise: { $in: classTypes } });
+    // Find classes that match user's interests
+    const recommendedClasses = await Class.find({ category: { $in: classCategories } }).limit(10);
 
+    // Store recommendations in the database
     const recommendation = await Recommendation.findOneAndUpdate(
       { user: userId },
-      { recommendedTrainers },
+      { recommendedClasses },
       { upsert: true, new: true }
     );
 
     res.json(recommendation);
   } catch (err) {
+    console.error(err);
     res.status(500).json({ message: "Error generating recommendations", error: err.message });
   }
 };
@@ -32,8 +36,13 @@ exports.generateRecommendations = async (req, res) => {
 // Get recommendations for a user
 exports.getRecommendations = async (req, res) => {
   try {
-    const recommendations = await Recommendation.findOne({ user: req.params.userId }).populate("recommendedClasses");
-    if (!recommendations) return res.status(404).json({ message: "No recommendations found" });
+    const recommendations = await Recommendation.findOne({ user: req.params.userId })
+      .populate("recommendedClasses");
+
+    if (!recommendations) {
+      return res.status(404).json({ message: "No recommendations found" });
+    }
+
     res.json(recommendations);
   } catch (err) {
     res.status(500).json({ message: "Error fetching recommendations", error: err.message });

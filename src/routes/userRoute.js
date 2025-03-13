@@ -4,7 +4,7 @@ const { getAllUsers, getUserById, updateUser, deleteUser } = require("../control
 const { protectCustomer, protectTrainer } = require("../middleware/authMiddleware");
 
 router.get("/", getAllUsers);
-router.get("/:id", getUserById);
+router.get("/:id", protectCustomer,getUserById);
 router.put("/:id",protectCustomer, updateUser);
 router.delete("/:id", deleteUser);
 
