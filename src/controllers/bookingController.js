@@ -1,7 +1,7 @@
 const Booking = require("../models/Booking");
 const Trainer = require("../models/Trainer");
 const User = require("../models/User");
-// const { generateRecommendations } = require("./recommendationController");
+const { generateRecommendations } = require("./recommendationController");
 const Class = require("../models/Class");
 
 // ✅ Create a new booking
@@ -50,8 +50,8 @@ exports.createBooking = async (req, res) => {
     });
 
     await newBooking.save();
-    // await generateRecommendations(req, res); 
-    res.status(201).json({ message: "Booking successful", booking: newBooking });
+    await generateRecommendations(req.user._id);  
+      res.status(201).json({ message: "Booking successful", booking: newBooking });
   } catch (error) {
     console.error("Booking Error:", error);
     res.status(500).json({ message: "Internal Server Error" });
