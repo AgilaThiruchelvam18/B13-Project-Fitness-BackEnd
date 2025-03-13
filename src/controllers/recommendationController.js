@@ -2,10 +2,6 @@ const Recommendation = require("../models/Recommendation");
 const Booking = require("../models/Booking");
 const Class = require("../models/Class");
 
-const Recommendation = require("../models/Recommendation");
-const Booking = require("../models/Booking");
-const Class = require("../models/Class");
-
 exports.generateRecommendations = async (req, res) => {
   try {
     const userId = req.params.userId;
