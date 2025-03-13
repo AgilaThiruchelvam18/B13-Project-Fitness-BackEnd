@@ -38,7 +38,7 @@ exports.getRecommendations = async (req, res) => {
     const recommendations = await Recommendation.findOne({ user: req.params.userId })
     .populate({
       path: "recommendedClasses",
-      populate: { path: "trainer", select: "userName" }, // ✅ Populate trainer's username
+      populate: { path: "trainer" }, // ✅ Populate trainer's username
     });
 console.log("Recommendations:", recommendations);
     if (!recommendations) {
