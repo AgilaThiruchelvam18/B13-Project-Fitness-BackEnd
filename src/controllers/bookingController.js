@@ -3,32 +3,36 @@ const Trainer = require("../models/Trainer");
 const User = require("../models/User");
 const { generateRecommendations } = require("./recommendationController");
 const Class = require("../models/Class");
+const nodemailer = require("nodemailer");
 
-// ✅ Create a new booking
+// ✅ Configure Nodemailer for email notifications
+const transporter = nodemailer.createTransport({
+  service: "gmail",
+  auth: {
+    user: process.env.EMAIL_USER, // Your email
+    pass: process.env.EMAIL_PASS, // Use App Password if using Gmail
+  },
+});
+
+// ✅ Create a new booking with email notification
 exports.createBooking = async (req, res) => {
   try {
     const { classId, trainerId, category, price } = req.body;
-    // console.log("Trainer ID Received:", trainerId);
 
-    // ✅ FIX: Ensure all required fields are provided
     if (!classId || !trainerId || !category || !price) {
       return res.status(400).json({ message: "All fields are required" });
     }
 
-    // ✅ FIX: Check if class exists
     const selectedClass = await Class.findById(classId);
     if (!selectedClass) {
       return res.status(404).json({ message: "Class not found" });
     }
 
-    // ✅ FIX: Check if trainer exists (trainerId is already a string)
     const trainer = await Trainer.findById(trainerId);
     if (!trainer) {
       return res.status(404).json({ message: "Trainer not found" });
     }
-    // console.log("Trainer details:", trainer);
 
-    // ✅ FIX: Prevent duplicate bookings
     const existingBooking = await Booking.findOne({
       user: req.user._id,
       classId,
@@ -39,60 +43,108 @@ exports.createBooking = async (req, res) => {
       return res.status(400).json({ message: "You have already booked this class" });
     }
 
-    // ✅ FIX: Create new booking with correct trainer reference
+    // ✅ Create new booking
     const newBooking = new Booking({
-      user: req.user._id, 
+      user: req.user._id,
       classId,
-      trainer: trainerId, // ✅ FIXED: Using trainerId directly
+      trainer: trainerId,
       category,
       price,
       status: "Booked",
     });
 
     await newBooking.save();
-    await generateRecommendations(req.user._id);  
-      res.status(201).json({ message: "Booking successful", booking: newBooking });
+    await generateRecommendations(req.user._id);
+
+    // ✅ Send booking confirmation email
+    const user = await User.findById(req.user._id);
+    const mailOptions = {
+      from: process.env.EMAIL_USER,
+      to: user.email,
+      subject: "Booking Confirmation - Fitness Hub",
+      html: `
+        <h2>Booking Confirmed! 🎉</h2>
+        <p>Hi ${user.userName},</p>
+        <p>Your booking for <strong>${selectedClass.title}</strong> with trainer <strong>${trainer.userName}</strong> has been confirmed.</p>
+        <p><strong>Category:</strong> ${selectedClass.category}</p>
+        <p><strong>Duration:</strong> ${selectedClass.duration} mins</p>
+        <p><strong>Price:</strong> $${selectedClass.price}</p>
+        <p>See you soon! 💪</p>
+        <br />
+        <p>Best Regards,<br />Fitness Hub Team</p>
+      `,
+    };
+
+    transporter.sendMail(mailOptions, (error, info) => {
+      if (error) {
+        console.log("Email error:", error);
+      } else {
+        console.log("Email sent:", info.response);
+      }
+    });
+
+    res.status(201).json({ message: "Booking successful. Confirmation email sent.", booking: newBooking });
   } catch (error) {
     console.error("Booking Error:", error);
     res.status(500).json({ message: "Internal Server Error" });
   }
 };
 
+// ✅ Get bookings
 exports.getBookings = async (req, res) => {
   try {
     const bookings = await Booking.find({ user: req.user._id })
-    .populate("user", "userName email") // ✅ Populating user
-    .populate("trainer", "userName email ratings")
-    .populate("classId")// ✅ Populating trainer
+      .populate("user", "userName email")
+      .populate("trainer", "userName email ratings")
+      .populate("classId");
+
     res.status(200).json(bookings);
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
 };
-//    populate("trainer", "userName email ratings");
 
-// 🔥 Update Booking
+// ✅ Cancel booking with email notification
 exports.cancelBooking = async (req, res) => {
   try {
-    const { id } = req.params; // Booking ID
-
-    // 🔍 Find booking by ID
-    let booking = await Booking.findById(id);
+    const { id } = req.params;
+    let booking = await Booking.findById(id).populate("classId trainer user");
 
     if (!booking) {
       return res.status(404).json({ message: "Booking not found" });
     }
 
-    // 🔐 Ensure only the user who booked it can cancel
-    if (booking.user.toString() !== req.user.id) {
+    if (booking.user._id.toString() !== req.user.id) {
       return res.status(403).json({ message: "Not authorized to cancel this booking" });
     }
 
-    // ✅ Update the status to "Cancelled"
     booking.status = "Cancelled";
     await booking.save();
 
-    res.json({ message: "Booking cancelled successfully", booking });
+    // ✅ Send cancellation email
+    const mailOptions = {
+      from: process.env.EMAIL_USER,
+      to: booking.user.email,
+      subject: "Booking Cancellation - Fitness Hub",
+      html: `
+        <h2>Booking Cancelled ❌</h2>
+        <p>Hi ${booking.user.userName},</p>
+        <p>Your booking for <strong>${booking.classId.title}</strong> with trainer <strong>${booking.trainer.userName}</strong> has been cancelled.</p>
+        <p>If this was a mistake, you can rebook anytime!</p>
+        <br />
+        <p>Best Regards,<br />Fitness Hub Team</p>
+      `,
+    };
+
+    transporter.sendMail(mailOptions, (error, info) => {
+      if (error) {
+        console.log("Email error:", error);
+      } else {
+        console.log("Cancellation email sent:", info.response);
+      }
+    });
+
+    res.json({ message: "Booking cancelled successfully. Email sent.", booking });
   } catch (error) {
     console.error("Error cancelling booking:", error);
     res.status(500).json({ message: "Server error" });
