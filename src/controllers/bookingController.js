@@ -10,28 +10,33 @@ exports.createBooking = async (req, res) => {
     const { classId, trainerId, category, price } = req.body;
     console.log("Trainer ID Received:", trainerId);
 
-    // ✅ FIX: Ensure all required fields are provided
+    // ✅ Ensure user is authenticated
+    if (!req.user || !req.user._id) {
+      return res.status(401).json({ message: "Unauthorized" });
+    }
+
+    // ✅ Validate input fields
     if (!classId || !trainerId || !category || !price) {
       return res.status(400).json({ message: "All fields are required" });
     }
 
-    // ✅ FIX: Check if class exists
+    // ✅ Check if class exists
     const selectedClass = await Class.findById(classId);
     if (!selectedClass) {
       return res.status(404).json({ message: "Class not found" });
     }
 
-    // ✅ FIX: Check if trainer exists (trainerId is already a string)
+    // ✅ Check if trainer exists
     const trainer = await Trainer.findById(trainerId);
     if (!trainer) {
       return res.status(404).json({ message: "Trainer not found" });
     }
     console.log("Trainer details:", trainer);
 
-    // ✅ FIX: Prevent duplicate bookings
+    // ✅ Prevent duplicate bookings
     const existingBooking = await Booking.findOne({
       user: req.user._id,
-      classId,
+      class: classId, // ✅ Use 'class' instead of 'classId' to match schema
       status: "Booked",
     });
 
@@ -39,23 +44,25 @@ exports.createBooking = async (req, res) => {
       return res.status(400).json({ message: "You have already booked this class" });
     }
 
-    // ✅ FIX: Create new booking with correct trainer reference
+    // ✅ Create new booking
     const newBooking = new Booking({
-      user: req.user._id, 
-      classId,
-      trainer: trainerId, // ✅ FIXED: Using trainerId directly
+      user: req.user._id,
+      class: classId,
+      trainer: trainerId,
       category,
       price,
       status: "Booked",
     });
 
     await newBooking.save();
-    await axios.post(`https://fitnesshub-5yf3.onrender.com/api/recommendations/${req.user._id}`);
+
+    // ✅ Instead of making an axios call, trigger recommendations function directly
+    await generateRecommendations(req, res); 
 
     res.status(201).json({ message: "Booking successful", booking: newBooking });
   } catch (error) {
     console.error("Booking Error:", error);
-    res.status(500).json({ message: "Internal Server Error" });
+    res.status(500).json({ message: "Internal Server Error", error: error.message });
   }
 };
 
