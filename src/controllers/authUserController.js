@@ -140,6 +140,6 @@ exports.changePassword = async (req, res) => {
   }
 };
 exports.logoutUser = (req, res) => {
-  res.clearCookie("jwt", { httpOnly: true, secure: true, sameSite: "None" });
+  res.clearCookie("customer_jwt", { httpOnly: true, secure: true, sameSite: "None" });
   res.status(200).json({ message: "Logged out successfully" });
 };
