@@ -5,7 +5,7 @@ const Class = require("../models/Class");
 exports.generateRecommendations = async (userId) => {
   try {
     // Fetch user's past bookings
-    const bookings = await Booking.find({ user: userId }).populate("classId");
+    const bookings = await Booking.find({ user: userId }).populate("classId").populate("trainer");
 
     if (!bookings.length) {
       return;
@@ -19,7 +19,7 @@ exports.generateRecommendations = async (userId) => {
     }
 
     // Find recommended classes
-    const recommendedClasses = await Class.find({ category: { $in: classCategories } }).limit(10);
+    const recommendedClasses = await Class.find({ category: { $in: classCategories } }).limit(5);
 
     // Save/update recommendations in the database
     await Recommendation.findOneAndUpdate(
