@@ -114,7 +114,9 @@ exports.getUserProfile = async (req, res) => {
 exports.passwordChange = async (req, res) => {
   try {
     const { currentPassword, newPassword } = req.body;
-
+console.log("req.body",req.body);
+console.log("req.user",req.user);
+console.log("currentPassword",currentPassword);
     if (!currentPassword || !newPassword) {
       return res.status(400).json({ message: "Please provide both current and new passwords." });
     }
@@ -123,7 +125,7 @@ exports.passwordChange = async (req, res) => {
     if (!user) {
       return res.status(404).json({ message: "User not found." });
     }
-
+console.log("user",user);
     // Check if current password is correct
     const isMatch = await bcrypt.compare(currentPassword, user.password);
     if (!isMatch) {
