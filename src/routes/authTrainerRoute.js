@@ -4,8 +4,10 @@ const {
   requestPasswordReset,
   resetPassword,
   login,
-  register
+  register,logoutTrainer,getTrainerProfile
 } = require("../controllers/authTrainerController");
+const { protectCustomer, protectTrainer } = require("../middleware/authMiddleware");
+
 const multer = require("multer");
 
 const storage = multer.memoryStorage(); // Store in memory or change to disk storage if needed
@@ -28,5 +30,7 @@ router.post("/register", registerValidation, upload.single("profilePicture"), re
 router.post("/login", loginValidation, login);
 router.post("/request-password-reset", check("email").isEmail(), requestPasswordReset);
 router.post("/reset-password/:token", check("password").isLength({ min: 6 }), resetPassword);
+router.get("/profile", protectTrainer, getTrainerProfile);
+router.post("/logout", protectTrainer, logoutTrainer);
 
 module.exports = router;

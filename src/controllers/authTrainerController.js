@@ -122,3 +122,15 @@ exports.resetPassword = async (req, res) => {
     res.status(500).json({ message: "Server error" });
   }
 };
+
+exports.getTrainerProfile = async (req, res) => {
+  try {
+    res.json(req.user);
+  } catch (error) {
+    res.status(500).json({ message: "Server Error", error: error.message });
+  }
+};
+exports.logoutTrainer = (req, res) => {
+  res.clearCookie("trainer_jwt", { httpOnly: true, secure: true, sameSite: "None" });
+  res.status(200).json({ message: "Logged out successfully" });
+};
