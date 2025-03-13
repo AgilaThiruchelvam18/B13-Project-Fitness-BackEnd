@@ -2,7 +2,7 @@ const User = require("../models/User");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const nodemailer = require("nodemailer");
-const { generateRecommendations } = require("./recommendationController");
+// const { generateRecommendations } = require("./recommendationController");
 
 const transporter = nodemailer.createTransport({
   service: "gmail",
@@ -42,7 +42,7 @@ exports.register = async (req, res) => {
       if (!isMatch) return res.status(400).json({ message: "Invalid credentials" });
   
       const token = jwt.sign({ userId: user._id }, process.env.JWT_SECRET, { expiresIn: "1h" });
-      await generateRecommendations({ params: { userId: user._id } }, res);
+      // await generateRecommendations({ params: { userId: user._id } }, res);
 
       res.cookie("customer_jwt", token, {
         httpOnly: true,
