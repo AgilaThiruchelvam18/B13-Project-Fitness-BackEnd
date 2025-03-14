@@ -1,4 +1,5 @@
 const express = require("express");
+const router = express.Router(); // ✅ This is missing!
 const { check } = require("express-validator");
 const {
   requestPasswordReset,
