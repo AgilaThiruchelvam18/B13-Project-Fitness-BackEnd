@@ -12,41 +12,108 @@ const transporter = nodemailer.createTransport({
   }
 });
 
+// Register Trainer
 exports.register = async (req, res) => {
   try {
-    const { userName, email, password, expertise, phone, bio, certifications } = req.body;
-// , availability, facebook, instagram, twitter, linkedin, youtube
-    let trainer = await Trainer.findOne({ email });
-    if (trainer) return res.status(400).json({ message: "User already exists" });
+    const {
+      userName,
+      email,
+      password,
+      phone,
+      bio,
+      expertise,
+      specialization,
+      experience,
+      certifications
+    } = req.body;
 
+    let existingTrainer = await Trainer.findOne({ email });
+    if (existingTrainer) {
+      return res.status(400).json({ message: "Trainer already exists" });
+    }
+
+    // Hash password
     const salt = await bcrypt.genSalt(10);
     const hashedPassword = await bcrypt.hash(password, salt);
 
-    // Handle cover media
-    let coverMedia = { url: null, type: "image" };
-    if (req.file) {
-      coverMedia = {
-        url: `uploads/${req.file.filename}`,
-        type: req.body.coverMediaType || "image",
-      };
+    let mediaUploads = [];
+    if (req.files) {
+      mediaUploads = req.files.map((file) => ({
+        url: `uploads/${file.filename}`,
+        type: file.mimetype.startsWith("image") ? "image" : "video"
+      }));
     }
 
-    trainer = new Trainer({
+    const trainer = new Trainer({
       userName,
       email,
       password: hashedPassword,
       expertise,
-      phone,
+      phone: req.body.phone || "",
       bio,
+      specialization,
+      experience: experience || 0,
       certifications,
-      ratings: { averageRating: 4, totalReviews: 5 }, // Default ratings
-      coverMedia,
+      media: mediaUploads,
+            ratings: {
+        averageRating: 4,
+        totalReviews: 5, 
+      },
+      // isVerified: false, // Default is false, change to true after email verification
     });
-      // socialLinks: { facebook, instagram, twitter, linkedin, youtube }
-      // availability,
 
     await trainer.save();
-    res.status(201).json({ message: "Trainer registered successfully" });
+    
+    res.status(201).json({
+      message: "Trainer registered successfully",
+      trainer: {
+        id: trainer._id,
+        email: trainer.email,
+        userName: trainer.userName,
+        // isVerified: trainer.isVerified,
+      },
+    });
+  } catch (error) {
+    res.status(500).json({ message: "Error creating trainer", error: error.message });
+  }
+};
+
+// Trainer Login
+exports.login = async (req, res) => {
+  try {
+    const { email, password } = req.body;
+    const trainer = await Trainer.findOne({ email });
+
+    if (!trainer) {
+      return res.status(400).json({ message: "Invalid credentials" });
+    }
+
+    const isMatch = await bcrypt.compare(password, trainer.password);
+    if (!isMatch) {
+      return res.status(400).json({ message: "Invalid credentials" });
+    }
+
+    // if (!trainer.isVerified) {
+    //   return res.status(401).json({ message: "Email not verified. Please verify your email." });
+    // }
+
+    const token = jwt.sign({ id: trainer._id }, process.env.JWT_SECRET, { expiresIn: "1h" });
+
+    res.cookie("trainer_jwt", token, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV !== "development",
+      sameSite: "Strict",
+    });
+
+    res.json({
+      message: "Login successful",
+      trainer: {
+        id: trainer._id,
+        email: trainer.email,
+        userName: trainer.userName,
+        // isVerified: trainer.isVerified,
+      },
+    });
   } catch (error) {
     res.status(500).json({ message: "Server Error", error: error.message });
   }
