@@ -5,11 +5,11 @@ const TrainerSchema = new mongoose.Schema({
   email: { type: String, required: true, unique: true },
   password: { type: String, required: true },
   expertise: { type: [String] }, // Example: ["Yoga", "Strength Training"]
-  specialization: { type: String, default: [] }, // Example: ["Weight Loss", "Muscle Gain"]
+  specialization: { type: String, default:null }, // Example: ["Weight Loss", "Muscle Gain"]
   experience: { type: Number, default: 0 }, // Years of experience
   phone: { type: String },
   bio: { type: String },
-  certifications: { type: String, default: [] }, // Example: ["Certified Personal Trainer"]
+  certifications: { type: String, default:null }, // Example: ["Certified Personal Trainer"]
   ratings: {
     averageRating: { type: Number, default: 0 },
     totalReviews: { type: Number, default: 0 },
