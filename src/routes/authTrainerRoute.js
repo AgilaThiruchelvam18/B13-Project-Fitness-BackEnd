@@ -7,7 +7,7 @@ const {
   login,
   register,
   logoutTrainer,
-  getTrainerProfile,
+  getTrainerProfile
 } = require("../controllers/authTrainerController");
 const { protectTrainer } = require("../middleware/authMiddleware");
 const multer = require("multer");

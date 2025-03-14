@@ -171,7 +171,7 @@ exports.resetPassword = async (req, res) => {
 };
 
 // Get Trainer Profile
-exports.getProfile = async (req, res) => {
+exports.getTrainerProfile = async (req, res) => {
   try {
     const trainer = await Trainer.findById(req.trainer.id).select("-password -resetToken -resetTokenExpiry");
 
