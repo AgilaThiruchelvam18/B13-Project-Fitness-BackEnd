@@ -60,7 +60,7 @@ exports.register = async (req, res) => {
         averageRating: 4,
         totalReviews: 5, 
       },
-      isVerified: false, // Default is false, change to true after email verification
+      // isVerified: false, // Default is false, change to true after email verification
     });
 
     await trainer.save();
@@ -71,7 +71,7 @@ exports.register = async (req, res) => {
         id: trainer._id,
         email: trainer.email,
         userName: trainer.userName,
-        isVerified: trainer.isVerified,
+        // isVerified: trainer.isVerified,
       },
     });
   } catch (error) {
@@ -94,9 +94,9 @@ exports.login = async (req, res) => {
       return res.status(400).json({ message: "Invalid credentials" });
     }
 
-    if (!trainer.isVerified) {
-      return res.status(401).json({ message: "Email not verified. Please verify your email." });
-    }
+    // if (!trainer.isVerified) {
+    //   return res.status(401).json({ message: "Email not verified. Please verify your email." });
+    // }
 
     const token = jwt.sign({ id: trainer._id }, process.env.JWT_SECRET, { expiresIn: "1h" });
 
@@ -112,7 +112,7 @@ exports.login = async (req, res) => {
         id: trainer._id,
         email: trainer.email,
         userName: trainer.userName,
-        isVerified: trainer.isVerified,
+        // isVerified: trainer.isVerified,
       },
     });
   } catch (error) {
