@@ -134,7 +134,7 @@ exports.requestPasswordReset = async (req, res) => {
     trainer.resetTokenExpiry = Date.now() + 15 * 60 * 1000; // 15 minutes expiry
     await trainer.save();
 
-    const resetLink = `${process.env.CLIENT_URL}/trainer/reset-password/${resetToken}`;
+    const resetLink = `${process.env.FRONTEND_URL}/trainer/reset-password/${resetToken}`;
     await transporter.sendMail({
       to: trainer.email,
       subject: "Password Reset Request",
