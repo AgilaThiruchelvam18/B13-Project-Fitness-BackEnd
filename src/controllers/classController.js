@@ -22,6 +22,9 @@ exports.createClass = async (req, res) => {
       schedule,
       trainer: req.user._id,
     });
+ // 🔹 Update Trainer's classes array
+ trainer.classes.push(newClass._id);
+ await trainer.save(); // Save the updated trainer document
 
     await newClass.save();
     res.status(201).json(newClass);

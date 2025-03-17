@@ -27,7 +27,6 @@ const classSchema = new mongoose.Schema(
     capacity: { type: Number, required: true },
     schedule: { type: scheduleSchema, required: true },
     trainer: { type: mongoose.Schema.Types.ObjectId, ref: "Trainer", required: true }, // 🔹 Add Trainer Reference
-
   },
   { timestamps: true }
 );
