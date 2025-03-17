@@ -1,12 +1,13 @@
-const express = require("express");import {
+const express = require("express");
+const {
   createClass,
   updateClass,
   deleteClass,
   getClassById,
   getAllClasses,
   getTrainerClasses,  // New controller for fetching trainer's classes
-} from "../controllers/class-controller.js";
-import { protect, trainerProtect } from "../middleware/authMiddleware.js";
+}= require( "../controllers/class-controller.js");
+const { protect, trainerProtect }= require("../middleware/authMiddleware.js");
 
 const router = express.Router();
 
