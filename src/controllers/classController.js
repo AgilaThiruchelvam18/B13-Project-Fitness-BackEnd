@@ -1,5 +1,5 @@
-import mongoose from "mongoose";
-import Class from "../models/schema-class.js";
+const mongoose = require("mongoose");
+const Class=require("../models/Class.js");
 
 // ✅ Create Class
 export const createClass = async (req, res) => {
