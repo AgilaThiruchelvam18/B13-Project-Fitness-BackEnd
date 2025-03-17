@@ -1,5 +1,6 @@
 const mongoose = require("mongoose");
 const Class=require("../models/Class.js");
+const Trainer=require("../models/Trainer.js");
 
 // @desc    Create a new class
 // @route   POST /api/classes
