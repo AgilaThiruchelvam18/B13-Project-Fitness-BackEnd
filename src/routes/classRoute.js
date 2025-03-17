@@ -1,15 +1,32 @@
-const express = require("express");
+import express from "express";
+import {
+  createClass,
+  updateClass,
+  deleteClass,
+  getClassById,
+  getAllClasses,
+  getTrainerClasses,  // New controller for fetching trainer's classes
+} from "../controllers/class-controller.js";
+import { protect, trainerProtect } from "../middleware/authMiddleware.js";
+
 const router = express.Router();
-const {protectCustomer, protectTrainer } = require("../middleware/authMiddleware");
-const trainerController = require("../controllers/classController");
-const multer = require("multer");
 
-const upload = multer({ dest: "uploads/" });
+// Create a new class (Trainer only)
+router.post("/", trainerProtect, createClass);
 
-router.post("/", protectTrainer, trainerController.createClass);
-router.put("/classes/:id", protectTrainer, trainerController.updateClass);
-router.delete("/classes/:id", protectTrainer, trainerController.deleteClass);
-router.get("/", protectTrainer, trainerController.getTrainerClasses);
-router.get("/upcomingclasses", protectCustomer, trainerController.AllTrainerClasses);
+// Update class (Trainer only)
+router.put("/:id", trainerProtect, updateClass);
 
-module.exports = router;
+// Delete class (Trainer only)
+router.delete("/:id", trainerProtect, deleteClass);
+
+// Get a single class by ID (Public)
+router.get("/:id", getClassById);
+
+// Get all classes (Public or protected if needed)
+router.get("/", getAllClasses);
+
+// Get classes created by the logged-in trainer
+router.get("/trainer", trainerProtect, getTrainerClasses);
+
+export default router;

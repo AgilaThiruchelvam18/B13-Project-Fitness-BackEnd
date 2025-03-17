@@ -1,99 +1,127 @@
-const Class = require("../models/Class");
-const Trainer = require("../models/Trainer");
+import mongoose from "mongoose";
+import Class from "../models/schema-class.js";
 
-// ✅ Create a new class
-const createClass = async (req, res) => {
+// ✅ Create Class
+export const createClass = async (req, res) => {
   try {
-    const { title, description, category, duration, timeSlots, capacity, price, trainer } = req.body;
-    // Ensure timeSlots is an array
-    const trainerDetails = await Trainer.findById(trainer);
+    const { title, description, category, duration, image, capacity, price, schedule } = req.body;
 
-    if (!Array.isArray(timeSlots) || timeSlots.length === 0) {
-      return res.status(400).json({ error: "Time slots must be a non-empty array" });
+    if (!title || !description || !category || !duration || !capacity || !price || !schedule) {
+      return res.status(400).json({ message: "All fields are required" });
     }
+
     const newClass = new Class({
+      trainer: req.user._id,
       title,
       description,
       category,
       duration,
-      timeSlots,
+      image,
       capacity,
       price,
-      trainer, // Ensure trainer ID is valid
+      schedule,
     });
-    const savedClass = await newClass.save();
 
-// ✅ Push new class ID to trainer's classes array and save trainer
-trainerDetails.classes.push(savedClass._id);
-await trainerDetails.save(); // Ensure trainer document is updated
-// const updatedTrainer = await Trainer.findByIdAndUpdate(
-//   trainer, 
-//   { $push: { classes: savedClass._id } }, 
-//   { new: true }
-// );
-    res.status(201).json(savedClass);
+    await newClass.save();
+    res.status(201).json(newClass);
   } catch (error) {
-    res.status(500).json({ error: "Failed to create class", details: error.message });
+    res.status(400).json({ message: error.message });
   }
 };
 
-
-// // ✅ Update a class
-const updateClass = async (req, res) => {
+// ✅ Update Class (Trainer can only update their own class)
+export const updateClass = async (req, res) => {
   try {
-    const { id } = req.params;
-    const updatedClass = await Class.findByIdAndUpdate(id, req.body, { new: true });
+    if (!mongoose.Types.ObjectId.isValid(req.params.id)) {
+      return res.status(400).json({ message: "Invalid class ID" });
+    }
 
-    if (!updatedClass) {
+    const classToUpdate = await Class.findById(req.params.id);
+
+    if (!classToUpdate) {
       return res.status(404).json({ message: "Class not found" });
     }
+
+    if (classToUpdate.trainer.toString() !== req.user._id.toString()) {
+      return res.status(403).json({ message: "Not authorized to update this class" });
+    }
+
+    const { title, description, category, duration, image, capacity, price, schedule } = req.body;
+    const updatedClass = await Class.findByIdAndUpdate(
+      req.params.id,
+      { title, description, category, duration, image, capacity, price, schedule },
+      { new: true }
+    );
 
     res.status(200).json(updatedClass);
   } catch (error) {
-    console.error("Error updating class:", error);
     res.status(500).json({ message: error.message });
   }
 };
 
-// ✅ Delete a class
-const deleteClass = async (req, res) => {
+// ✅ Delete Class (Trainer can only delete their own class)
+export const deleteClass = async (req, res) => {
   try {
-    const { id } = req.params;
-    const deletedClass = await Class.findByIdAndDelete(id);
+    if (!mongoose.Types.ObjectId.isValid(req.params.id)) {
+      return res.status(400).json({ message: "Invalid class ID" });
+    }
 
-    if (!deletedClass) {
+    const classToDelete = await Class.findById(req.params.id);
+
+    if (!classToDelete) {
       return res.status(404).json({ message: "Class not found" });
     }
 
+    if (classToDelete.trainer.toString() !== req.user._id.toString()) {
+      return res.status(403).json({ message: "Not authorized to delete this class" });
+    }
+
+    await Class.findByIdAndDelete(req.params.id);
     res.status(200).json({ message: "Class deleted successfully" });
   } catch (error) {
-    console.error("Error deleting class:", error);
     res.status(500).json({ message: error.message });
   }
 };
 
-// ✅ Get all classes created by a trainer
-const getTrainerClasses = async (req, res) => {
+// ✅ Get Single Class
+export const getClassById = async (req, res) => {
   try {
-    const trainerId = req.user._id; // Extract trainer ID from token
-    const classes = await Class.find({ trainer: trainerId });
+    if (!mongoose.Types.ObjectId.isValid(req.params.id)) {
+      return res.status(400).json({ message: "Invalid class ID" });
+    }
 
-    res.status(200).json(classes);
+    const classData = await Class.findById(req.params.id).populate("trainer", "name email");
+
+    if (!classData) {
+      return res.status(404).json({ message: "Class not found" });
+    }
+
+    res.status(200).json(classData);
   } catch (error) {
-    console.error("Error fetching trainer classes:", error);
     res.status(500).json({ message: error.message });
   }
 };
 
-// ✅ Get all upcoming classes (for customers)
-const AllTrainerClasses = async (req, res) => {
+// ✅ Get All Classes (Added Pagination)
+export const getAllClasses = async (req, res) => {
   try {
-    const classes = await Class.find().populate("trainer", "userName email ratings");
-    res.status(200).json(classes);
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 10;
+    const skip = (page - 1) * limit;
+
+    const classes = await Class.find()
+      .populate("trainer", "name email")
+      .skip(skip)
+      .limit(limit);
+
+    const totalClasses = await Class.countDocuments();
+
+    res.status(200).json({
+      totalPages: Math.ceil(totalClasses / limit),
+      currentPage: page,
+      classes,
+    });
   } catch (error) {
-    console.error("Error fetching all classes:", error);
     res.status(500).json({ message: error.message });
   }
 };
-
-module.exports = { createClass, updateClass, deleteClass, getTrainerClasses, AllTrainerClasses };
