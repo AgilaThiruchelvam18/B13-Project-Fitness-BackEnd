@@ -26,6 +26,6 @@ router.get("/:id", getClassById);
 router.get("/", getAllClasses);
 
 // Get classes created by the logged-in trainer
-router.get("/trainer", protectTrainer, getTrainerClasses);
+// router.get("/trainer", protectTrainer, getTrainerClasses);
 
 module.exports = router;
