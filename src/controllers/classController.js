@@ -20,6 +20,7 @@ exports.createClass = async (req, res) => {
       price,
       capacity,
       schedule,
+      trainer: req.user._id,
     });
 
     await newClass.save();
