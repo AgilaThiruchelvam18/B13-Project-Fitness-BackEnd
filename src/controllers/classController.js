@@ -7,37 +7,27 @@ const Trainer=require("../models/Trainer.js");
 // @access  Trainer only
 exports.createClass = async (req, res) => {
   try {
-    const { title, description, category, duration, price, capacity, schedule, trainer } = req.body;
+    const { title, description, category, duration, price, capacity, schedule } = req.body;
 
-    // 🔹 Validate scheduleType
     if (!["One-time", "Recurrent"].includes(schedule.scheduleType)) {
       return res.status(400).json({ message: "Invalid schedule type" });
     }
 
-    // 🔹 Ensure required fields based on scheduleType
+    // 🔹 Validate One-time schedule
     if (schedule.scheduleType === "One-time") {
-      if (!schedule.startDate || !schedule.timeSlots["One-time"]) {
-        return res.status(400).json({ message: "Start date and time slot are required for One-time classes" });
-      }
-      schedule.enabledDays = []; // No need for enabledDays
-      schedule.endDate = null; // No endDate for One-time classes
-    } else {
-      if (!schedule.startDate || !schedule.endDate || schedule.enabledDays.length === 0) {
-        return res.status(400).json({ message: "Start date, end date, and enabled days are required for Recurrent classes" });
+      if (!schedule.oneTimeDate || !schedule.oneTimeStartTime || !schedule.oneTimeEndTime) {
+        return res.status(400).json({ message: "One-time schedule must have a date and start/end time." });
       }
     }
 
-    const newClass = new Class({
-      title,
-      description,
-      category,
-      duration,
-      price,
-      capacity,
-      schedule,
-      trainer: req.user.id, // Ensure trainer ID is from auth token
-    });
+    // 🔹 Validate Recurrent schedule
+    if (schedule.scheduleType === "Recurrent") {
+      if (!schedule.startDate || !schedule.endDate || schedule.enabledDays.length === 0) {
+        return res.status(400).json({ message: "Recurrent schedule must have start date, end date, and selected days." });
+      }
+    }
 
+    const newClass = new Class({ title, description, category, duration, price, capacity, schedule });
     await newClass.save();
     res.status(201).json(newClass);
   } catch (error) {

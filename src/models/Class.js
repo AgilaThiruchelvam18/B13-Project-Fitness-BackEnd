@@ -6,16 +6,15 @@ const timeSlotSchema = new mongoose.Schema({
 });
 
 const scheduleSchema = new mongoose.Schema({
-  scheduleType: {
-    type: String,
-    enum: ["One-time", "Recurrent"],
-    required: true,
-  },
-  enabledDays: { type: [String], default: [] }, // Only needed for "Recurrent"
+  scheduleType: { type: String, enum: ["One-time", "Recurrent"], required: true }, // 🔹 Added scheduleType
+  oneTimeDate: { type: Date }, // 🔹 Added One-time date
+  oneTimeStartTime: { type: String },
+  oneTimeEndTime: { type: String },
+  enabledDays: { type: [String] },
   timeSlots: { type: Map, of: [timeSlotSchema], default: {} }, // Allows multiple slots per day
   blockedDates: { type: [Date], default: [] },
-  startDate: { type: Date, required: true }, // Required for both "One-time" and "Recurrent"
-  endDate: { type: Date, required: function () { return this.scheduleType === "Recurrent"; } }, // Only required for "Recurrent"
+  startDate: { type: Date },
+  endDate: { type: Date },
 });
 
 const classSchema = new mongoose.Schema(
