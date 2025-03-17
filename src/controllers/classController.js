@@ -12,24 +12,34 @@ exports.createClass = async (req, res) => {
       return res.status(400).json({ message: "All fields are required" });
     }
 
+    // 🔹 Ensure the requesting user is a trainer
+    const trainer = await Trainer.findById(req.user._id);
+    if (!trainer) {
+      return res.status(404).json({ message: "Trainer not found" });
+    }
+
+    // 🔹 Create new class
     const newClass = new Class({
       title,
       description,
       category,
-      duration,
-      price,
-      capacity,
+      duration: Number(duration), // Convert to Number
+      price: Number(price),
+      capacity: Number(capacity),
       schedule,
-      trainer: req.user._id,
+      trainer: trainer._id, // Assign trainer ID
     });
- // 🔹 Update Trainer's classes array
- trainer.classes.push(newClass._id);
- await trainer.save(); // Save the updated trainer document
 
-    await newClass.save();
+    await newClass.save(); // 🔹 Save the class first
+
+    // 🔹 Update trainer's classes array
+    trainer.classes.push(newClass._id);
+    await trainer.save();
+
     res.status(201).json(newClass);
   } catch (error) {
-    res.status(500).json({ message: "Server Error", error });
+    console.error("Error creating class:", error);
+    res.status(500).json({ message: "Server Error", error: error.message });
   }
 };
 
