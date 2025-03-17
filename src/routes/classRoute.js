@@ -15,10 +15,10 @@ const router = express.Router();
 router.post("/", protectTrainer, createClass);
 
 // Update class (Trainer only)
-router.put("/:id", protectTrainer, updateClass);
+router.put("/:classId/reschedule", protectTrainer, updateClass);
 
 // Delete class (Trainer only)
-router.delete("/:id", protectTrainer, deleteClass);
+router.delete("/:classId/cancel", protectTrainer, deleteClass);
 
 // Get a single class by ID (Public)
 router.get("/:id", getClassById);

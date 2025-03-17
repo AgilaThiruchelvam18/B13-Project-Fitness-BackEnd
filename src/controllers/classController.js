@@ -91,48 +91,18 @@ exports.getClassById = async (req, res) => {
 // @access  Trainer only
 exports.updateClass = async (req, res) => {
   try {
-    const { title, description, category, duration, price, capacity, schedule } = req.body;
+    const { newDate, newTimeSlot } = req.body;
+    const updatedClass = await Class.findByIdAndUpdate(req.params.id, {
+      "schedule.date": newDate,
+      "schedule.startTime": newTimeSlot.startTime,
+      "schedule.endTime": newTimeSlot.endTime,
+    }, { new: true });
 
-    const existingClass = await Class.findById(req.params.id);
-    if (!existingClass) return res.status(404).json({ message: "Class not found" });
+    if (!updatedClass) return res.status(404).json({ message: "Class not found" });
 
-    // 🔹 Ensure trainer is modifying their own class
-    if (existingClass.trainer.toString() !== req.user.id) {
-      return res.status(403).json({ message: "Unauthorized" });
-    }
-
-    existingClass.title = title || existingClass.title;
-    existingClass.description = description || existingClass.description;
-    existingClass.category = category || existingClass.category;
-    existingClass.duration = duration || existingClass.duration;
-    existingClass.price = price || existingClass.price;
-    existingClass.capacity = capacity || existingClass.capacity;
-
-    // 🔹 Update schedule with validation
-    if (schedule) {
-      if (!["One-time", "Recurrent"].includes(schedule.scheduleType)) {
-        return res.status(400).json({ message: "Invalid schedule type" });
-      }
-
-      if (schedule.scheduleType === "One-time") {
-        if (!schedule.oneTimeDate || !schedule.oneTimeStartTime || !schedule.oneTimeEndTime) {
-          return res.status(400).json({ message: "One-time schedule must have a date and start/end time." });
-        }
-        schedule.enabledDays = [];
-        schedule.endDate = null;
-      } else {
-        if (!schedule.startDate || !schedule.endDate || schedule.enabledDays.length === 0) {
-          return res.status(400).json({ message: "Recurrent schedule must have start date, end date, and selected days." });
-        }
-      }
-
-      existingClass.schedule = schedule;
-    }
-
-    await existingClass.save();
-    res.status(200).json(existingClass);
+    res.json({ message: "Class rescheduled successfully", updatedClass });
   } catch (error) {
-    res.status(500).json({ message: "Server Error", error: error.message });
+    res.status(500).json({ message: "Server error", error });
   }
 };
 
@@ -141,18 +111,10 @@ exports.updateClass = async (req, res) => {
 // @access  Trainer only
 exports.deleteClass = async (req, res) => {
   try {
-    const fitnessClass = await Class.findById(req.params.id);
-    if (!fitnessClass) return res.status(404).json({ message: "Class not found" });
-
-    // 🔹 Ensure only the trainer who created it can delete
-    if (fitnessClass.trainer.toString() !== req.user.id) {
-      return res.status(403).json({ message: "Unauthorized" });
-    }
-
-    await fitnessClass.remove();
-    res.status(200).json({ message: "Class deleted successfully" });
+    await Class.findByIdAndDelete(req.params.id);
+    res.json({ message: "Class cancelled successfully" });
   } catch (error) {
-    res.status(500).json({ message: "Server Error", error: error.message });
+    res.status(500).json({ message: "Server error", error });
   }
 };
 // @desc    Get all scheduled classes sorted by date
