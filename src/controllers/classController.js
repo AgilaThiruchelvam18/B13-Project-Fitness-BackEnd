@@ -56,7 +56,11 @@ exports.createClass = async (req, res) => {
 // @access  Public
 exports.getAllClasses = async (req, res) => {
   try {
-    const classes = await Class.find().populate("trainer", "name email");
+    const classes = await Class.find().populate({
+      path: "trainer",
+      select: "name email",
+      options: { strictPopulate: false } // ✅ Prevents errors if trainer is missing
+    });
     res.status(200).json(classes);
   } catch (error) {
     res.status(500).json({ message: "Server Error", error: error.message });
@@ -68,7 +72,11 @@ exports.getAllClasses = async (req, res) => {
 // @access  Public
 exports.getClassById = async (req, res) => {
   try {
-    const fitnessClass = await Class.findById(req.params.id).populate("trainer", "name email");
+    const fitnessClass = await Class.findById(req.params.id).populate({
+      path: "trainer",
+      select: "name email",
+      options: { strictPopulate: false } // ✅ Prevents errors if trainer is missing
+    });
     if (!fitnessClass) {
       return res.status(404).json({ message: "Class not found" });
     }
