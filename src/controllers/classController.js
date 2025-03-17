@@ -2,7 +2,7 @@ const mongoose = require("mongoose");
 const Class=require("../models/Class.js");
 
 // ✅ Create Class
-export const createClass = async (req, res) => {
+exports.createClass = async (req, res) => {
   try {
     const { title, description, category, duration, image, capacity, price, schedule } = req.body;
 
@@ -30,7 +30,7 @@ export const createClass = async (req, res) => {
 };
 
 // ✅ Update Class (Trainer can only update their own class)
-export const updateClass = async (req, res) => {
+exports.updateClass = async (req, res) => {
   try {
     if (!mongoose.Types.ObjectId.isValid(req.params.id)) {
       return res.status(400).json({ message: "Invalid class ID" });
@@ -60,7 +60,7 @@ export const updateClass = async (req, res) => {
 };
 
 // ✅ Delete Class (Trainer can only delete their own class)
-export const deleteClass = async (req, res) => {
+exports.deleteClass = async (req, res) => {
   try {
     if (!mongoose.Types.ObjectId.isValid(req.params.id)) {
       return res.status(400).json({ message: "Invalid class ID" });
@@ -84,7 +84,7 @@ export const deleteClass = async (req, res) => {
 };
 
 // ✅ Get Single Class
-export const getClassById = async (req, res) => {
+exports.getClassById = async (req, res) => {
   try {
     if (!mongoose.Types.ObjectId.isValid(req.params.id)) {
       return res.status(400).json({ message: "Invalid class ID" });
@@ -103,7 +103,7 @@ export const getClassById = async (req, res) => {
 };
 
 // ✅ Get All Classes (Added Pagination)
-export const getAllClasses = async (req, res) => {
+exports.getAllClasses = async (req, res) => {
   try {
     const page = parseInt(req.query.page) || 1;
     const limit = parseInt(req.query.limit) || 10;
