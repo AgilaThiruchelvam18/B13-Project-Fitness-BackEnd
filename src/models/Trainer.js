@@ -5,11 +5,11 @@ const TrainerSchema = new mongoose.Schema({
   email: { type: String, required: true, unique: true },
   password: { type: String, required: true },
   expertise: { type: [String] }, // Example: ["Yoga", "Strength Training"]
-  specialization: { type: String, default:null }, // Example: ["Weight Loss", "Muscle Gain"]
+  specialization: { type: [String], default: [] }, // ✅ Allow array of strings
   experience: { type: Number, default: 0 }, // Years of experience
   phone: { type: String },
   bio: { type: String },
-  certifications: { type: String, default:null }, // Example: ["Certified Personal Trainer"]
+  certifications: { type: [String], default: [] }, // ✅ Allow array of strings
   ratings: {
     averageRating: { type: Number, default: 0 },
     totalReviews: { type: Number, default: 0 },
@@ -22,19 +22,14 @@ const TrainerSchema = new mongoose.Schema({
       createdAt: { type: Date, default: Date.now },
     },
   ],
-  // coverMedia: {
-  //   url: { type: String, default: null },
-  //   type: { type: String, enum: ["image", "video"], default: "image" },
-  // },
   mediaUploads: [
     {
-      url: { type: String,  default: null },
+      url: { type: String, default: null },
       type: { type: String, enum: ["image", "video"], default: "image" },
     },
   ],
   resetToken: { type: String, default: null },
   resetTokenExpiry: { type: Date, default: null },
-  // isVerified: { type: Boolean, default: false }, // Email verification
   createdAt: { type: Date, default: Date.now },
   classes: [{ type: mongoose.Schema.Types.ObjectId, ref: "Class" }],
 });
