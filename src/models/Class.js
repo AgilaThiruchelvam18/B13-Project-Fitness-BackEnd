@@ -18,6 +18,7 @@ const classSchema = new mongoose.Schema({
     startDate: { type: Date },
     endDate: { type: Date },
   },
+    trainer: { type: mongoose.Schema.Types.ObjectId, ref: "Trainer", required: true },
 }, { timestamps: true });
 
 module.exports = mongoose.model("Class", classSchema);
