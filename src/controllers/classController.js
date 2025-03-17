@@ -155,3 +155,49 @@ exports.deleteClass = async (req, res) => {
     res.status(500).json({ message: "Server Error", error: error.message });
   }
 };
+// @desc    Get all scheduled classes sorted by date
+// @route   GET /api/classes/schedule
+// @access  Public or Trainer only (modify as needed)
+exports.getScheduledClasses = async (req, res) => {
+  try {
+    const classes = await Class.find()
+      .populate({
+        path: "trainer",
+        select: "name email",
+        options: { strictPopulate: false }
+      })
+      .lean();
+
+    // Sorting and structuring classes by date
+    const sortedEvents = {};
+
+    classes.forEach((cls) => {
+      if (cls.schedule.scheduleType === "One-time") {
+        const dateKey = new Date(cls.schedule.oneTimeDate).toISOString().split("T")[0];
+        if (!sortedEvents[dateKey]) sortedEvents[dateKey] = [];
+        sortedEvents[dateKey].push(cls);
+      } else if (cls.schedule.scheduleType === "Recurrent") {
+        let currentDate = new Date(cls.schedule.startDate);
+        const endDate = new Date(cls.schedule.endDate);
+        while (currentDate <= endDate) {
+          const dayOfWeek = currentDate.toLocaleDateString("en-US", { weekday: "long" });
+          if (cls.schedule.enabledDays.includes(dayOfWeek)) {
+            const dateKey = currentDate.toISOString().split("T")[0];
+            if (!sortedEvents[dateKey]) sortedEvents[dateKey] = [];
+            sortedEvents[dateKey].push(cls);
+          }
+          currentDate.setDate(currentDate.getDate() + 1);
+        }
+      }
+    });
+
+    // Convert sorted object to an array for easier frontend handling
+    const sortedArray = Object.entries(sortedEvents)
+      .sort(([dateA], [dateB]) => new Date(dateA) - new Date(dateB))
+      .map(([date, events]) => ({ date, events }));
+
+    res.status(200).json(sortedArray);
+  } catch (error) {
+    res.status(500).json({ message: "Server Error", error: error.message });
+  }
+};

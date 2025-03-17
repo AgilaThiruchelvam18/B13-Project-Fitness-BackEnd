@@ -5,6 +5,7 @@ const {
   deleteClass,
   getClassById,
   getAllClasses,
+  getScheduledClasses,
   getTrainerClasses,  // New controller for fetching trainer's classes
 }= require( "../controllers/classController.js");
 const { protectTrainer } = require("../middleware/authMiddleware");
@@ -24,6 +25,7 @@ router.get("/:id", getClassById);
 
 // Get all classes (Public or protected if needed)
 router.get("/", getAllClasses);
+router.get("/schedule",protectTrainer, getScheduledClasses);
 
 // Get classes created by the logged-in trainer
 // router.get("/trainer", protectTrainer, getTrainerClasses);
