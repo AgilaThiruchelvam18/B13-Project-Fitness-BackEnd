@@ -29,4 +29,4 @@ router.get("/", getAllClasses);
 // Get classes created by the logged-in trainer
 router.get("/trainer", trainerProtect, getTrainerClasses);
 
-export default router;
+module.exports = router;
