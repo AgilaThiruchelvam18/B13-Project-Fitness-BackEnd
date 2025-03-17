@@ -1,6 +1,6 @@
 const mongoose = require("mongoose");
-const Class=require("../models/Class.js");
-const Trainer=require("../models/Trainer.js");
+const Class = require("../models/Class.js");
+const Trainer = require("../models/Trainer.js");
 
 // @desc    Create a new class
 // @route   POST /api/classes
@@ -26,12 +26,27 @@ exports.createClass = async (req, res) => {
         return res.status(400).json({ message: "Recurrent schedule must have start date, end date, and selected days." });
       }
     }
+    const trainer = await Trainer.findById(req.user._id);
+    if (!trainer) {
+      return res.status(404).json({ message: "Trainer not found" });
+    }
 
-    const newClass = new Class({ title, description, category, duration, price, capacity, schedule });
+    const newClass = new Class({
+      title,
+      description,
+      category,
+      duration,
+      price,
+      capacity,
+      schedule,
+      trainer: req.user.id, // Assign trainer to class
+    });
+
     await newClass.save();
+    trainer.classes.push(newClass._id);
+    await trainer.save();
     res.status(201).json(newClass);
   } catch (error) {
-    console.error("Error creating class:", error);
     res.status(500).json({ message: "Server Error", error: error.message });
   }
 };
@@ -41,10 +56,10 @@ exports.createClass = async (req, res) => {
 // @access  Public
 exports.getAllClasses = async (req, res) => {
   try {
-    const classes = await Class.find();
+    const classes = await Class.find().populate("trainer", "name email");
     res.status(200).json(classes);
   } catch (error) {
-    res.status(500).json({ message: "Server Error", error });
+    res.status(500).json({ message: "Server Error", error: error.message });
   }
 };
 
@@ -53,13 +68,13 @@ exports.getAllClasses = async (req, res) => {
 // @access  Public
 exports.getClassById = async (req, res) => {
   try {
-    const fitnessClass = await Class.findById(req.params.id);
+    const fitnessClass = await Class.findById(req.params.id).populate("trainer", "name email");
     if (!fitnessClass) {
       return res.status(404).json({ message: "Class not found" });
     }
     res.status(200).json(fitnessClass);
   } catch (error) {
-    res.status(500).json({ message: "Server Error", error });
+    res.status(500).json({ message: "Server Error", error: error.message });
   }
 };
 
@@ -73,6 +88,7 @@ exports.updateClass = async (req, res) => {
     const existingClass = await Class.findById(req.params.id);
     if (!existingClass) return res.status(404).json({ message: "Class not found" });
 
+    // 🔹 Ensure trainer is modifying their own class
     if (existingClass.trainer.toString() !== req.user.id) {
       return res.status(403).json({ message: "Unauthorized" });
     }
@@ -84,21 +100,21 @@ exports.updateClass = async (req, res) => {
     existingClass.price = price || existingClass.price;
     existingClass.capacity = capacity || existingClass.capacity;
 
-    // 🔹 Update schedule with same validation as create route
+    // 🔹 Update schedule with validation
     if (schedule) {
       if (!["One-time", "Recurrent"].includes(schedule.scheduleType)) {
         return res.status(400).json({ message: "Invalid schedule type" });
       }
 
       if (schedule.scheduleType === "One-time") {
-        if (!schedule.startDate || !schedule.timeSlots["One-time"]) {
-          return res.status(400).json({ message: "Start date and time slot required for One-time classes" });
+        if (!schedule.oneTimeDate || !schedule.oneTimeStartTime || !schedule.oneTimeEndTime) {
+          return res.status(400).json({ message: "One-time schedule must have a date and start/end time." });
         }
         schedule.enabledDays = [];
         schedule.endDate = null;
       } else {
         if (!schedule.startDate || !schedule.endDate || schedule.enabledDays.length === 0) {
-          return res.status(400).json({ message: "Start date, end date, and enabled days required for Recurrent classes" });
+          return res.status(400).json({ message: "Recurrent schedule must have start date, end date, and selected days." });
         }
       }
 
@@ -106,9 +122,9 @@ exports.updateClass = async (req, res) => {
     }
 
     await existingClass.save();
-    res.json(existingClass);
+    res.status(200).json(existingClass);
   } catch (error) {
-    res.status(500).json({ message: "Server Error", error });
+    res.status(500).json({ message: "Server Error", error: error.message });
   }
 };
 
@@ -117,12 +133,17 @@ exports.updateClass = async (req, res) => {
 // @access  Trainer only
 exports.deleteClass = async (req, res) => {
   try {
-    const deletedClass = await Class.findByIdAndDelete(req.params.id);
-    if (!deletedClass) {
-      return res.status(404).json({ message: "Class not found" });
+    const fitnessClass = await Class.findById(req.params.id);
+    if (!fitnessClass) return res.status(404).json({ message: "Class not found" });
+
+    // 🔹 Ensure only the trainer who created it can delete
+    if (fitnessClass.trainer.toString() !== req.user.id) {
+      return res.status(403).json({ message: "Unauthorized" });
     }
+
+    await fitnessClass.remove();
     res.status(200).json({ message: "Class deleted successfully" });
   } catch (error) {
-    res.status(500).json({ message: "Server Error", error });
+    res.status(500).json({ message: "Server Error", error: error.message });
   }
 };
