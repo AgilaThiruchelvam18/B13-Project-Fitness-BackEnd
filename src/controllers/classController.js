@@ -7,36 +7,38 @@ const Trainer=require("../models/Trainer.js");
 // @access  Trainer only
 exports.createClass = async (req, res) => {
   try {
-    const { title, description, category, duration, price, capacity, schedule } = req.body;
+    const { title, description, category, duration, price, capacity, schedule, trainer } = req.body;
 
-    if (!title || !description || !category || !duration || !price || !capacity || !schedule) {
-      return res.status(400).json({ message: "All fields are required" });
+    // 🔹 Validate scheduleType
+    if (!["One-time", "Recurrent"].includes(schedule.scheduleType)) {
+      return res.status(400).json({ message: "Invalid schedule type" });
     }
 
-    // 🔹 Ensure the requesting user is a trainer
-    const trainer = await Trainer.findById(req.user._id);
-    if (!trainer) {
-      return res.status(404).json({ message: "Trainer not found" });
+    // 🔹 Ensure required fields based on scheduleType
+    if (schedule.scheduleType === "One-time") {
+      if (!schedule.startDate || !schedule.timeSlots["One-time"]) {
+        return res.status(400).json({ message: "Start date and time slot are required for One-time classes" });
+      }
+      schedule.enabledDays = []; // No need for enabledDays
+      schedule.endDate = null; // No endDate for One-time classes
+    } else {
+      if (!schedule.startDate || !schedule.endDate || schedule.enabledDays.length === 0) {
+        return res.status(400).json({ message: "Start date, end date, and enabled days are required for Recurrent classes" });
+      }
     }
 
-    // 🔹 Create new class
     const newClass = new Class({
       title,
       description,
       category,
-      duration: Number(duration), // Convert to Number
-      price: Number(price),
-      capacity: Number(capacity),
+      duration,
+      price,
+      capacity,
       schedule,
-      trainer: trainer._id, // Assign trainer ID
+      trainer: req.user.id, // Ensure trainer ID is from auth token
     });
 
-    await newClass.save(); // 🔹 Save the class first
-
-    // 🔹 Update trainer's classes array
-    trainer.classes.push(newClass._id);
-    await trainer.save();
-
+    await newClass.save();
     res.status(201).json(newClass);
   } catch (error) {
     console.error("Error creating class:", error);
@@ -76,11 +78,45 @@ exports.getClassById = async (req, res) => {
 // @access  Trainer only
 exports.updateClass = async (req, res) => {
   try {
-    const updatedClass = await Class.findByIdAndUpdate(req.params.id, req.body, { new: true });
-    if (!updatedClass) {
-      return res.status(404).json({ message: "Class not found" });
+    const { title, description, category, duration, price, capacity, schedule } = req.body;
+
+    const existingClass = await Class.findById(req.params.id);
+    if (!existingClass) return res.status(404).json({ message: "Class not found" });
+
+    if (existingClass.trainer.toString() !== req.user.id) {
+      return res.status(403).json({ message: "Unauthorized" });
     }
-    res.status(200).json(updatedClass);
+
+    existingClass.title = title || existingClass.title;
+    existingClass.description = description || existingClass.description;
+    existingClass.category = category || existingClass.category;
+    existingClass.duration = duration || existingClass.duration;
+    existingClass.price = price || existingClass.price;
+    existingClass.capacity = capacity || existingClass.capacity;
+
+    // 🔹 Update schedule with same validation as create route
+    if (schedule) {
+      if (!["One-time", "Recurrent"].includes(schedule.scheduleType)) {
+        return res.status(400).json({ message: "Invalid schedule type" });
+      }
+
+      if (schedule.scheduleType === "One-time") {
+        if (!schedule.startDate || !schedule.timeSlots["One-time"]) {
+          return res.status(400).json({ message: "Start date and time slot required for One-time classes" });
+        }
+        schedule.enabledDays = [];
+        schedule.endDate = null;
+      } else {
+        if (!schedule.startDate || !schedule.endDate || schedule.enabledDays.length === 0) {
+          return res.status(400).json({ message: "Start date, end date, and enabled days required for Recurrent classes" });
+        }
+      }
+
+      existingClass.schedule = schedule;
+    }
+
+    await existingClass.save();
+    res.json(existingClass);
   } catch (error) {
     res.status(500).json({ message: "Server Error", error });
   }
