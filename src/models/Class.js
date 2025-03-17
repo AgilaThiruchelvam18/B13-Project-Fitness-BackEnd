@@ -1,74 +1,34 @@
-// const mongoose = require("mongoose");
-// const timeSlotSchema = new mongoose.Schema({
-//   date: Date, // Stores the exact date
-//   time: String, // Format: "HH:MM AM/PM"
-//   recurrence: {
-//     type: String,
-//     enum: ["one-time", "daily", "weekly", "monthly"],
-//     required: true,
-//   },
-//   recurrenceDetails: {
-//     daily: {
-//       startDate: Date,
-//       endDate: Date,
-//     },
-//     weekly: [String], // ["Monday", "Wednesday"]
-//   },
-// });
-// const timeSlotSchema = new mongoose.Schema({
-//   date: Date, // Stores the exact date
-//   time: String, // Format: "HH:MM AM/PM"
-//   recurrence: {
-//     type: String,
-//     enum: ["one-time", "daily", "weekly", "monthly"],
-//     required: true,
-//   },
-//   recurrenceDetails: {
-//     daily: {
-//       startDate: Date,
-//       endDate: Date,
-//     },
-//     weekly: [String], // ["Monday", "Wednesday"]
-//   },
-// });
-const mongoose = require("mongoose");
+import mongoose from "mongoose";
 
-const ClassSchema = new mongoose.Schema(
+const timeSlotSchema = new mongoose.Schema({
+  startTime: { type: String, required: true },
+  endTime: { type: String, required: true },
+});
+
+const scheduleSchema = new mongoose.Schema({
+  enabledDays: { type: [String], required: true },
+  timeSlots: { type: Map, of: [timeSlotSchema], default: {} }, // Allows multiple slots per day
+  blockedDates: { type: [Date], default: [] },
+  startDate: { type: Date, required: true },
+  endDate: { type: Date, required: true },
+});
+
+const classSchema = new mongoose.Schema(
   {
     title: { type: String, required: true },
-    trainer: { type: mongoose.Schema.Types.ObjectId, ref: "Trainer", required: true },
     description: { type: String, required: true },
     category: {
       type: String,
-      enum: ["Yoga", "Strength Training", "Cardio", "Meditation", "Zumba", "Nutrition"],
+      enum: ["Yoga", "Strength Training", "Zumba", "Meditation", "Cardio", "Nutrition"],
       required: true,
     },
     duration: { type: Number, required: true },
-    capacity: { type: Number, required: true },
     price: { type: Number, required: true },
-    schedule: {
-      enabledDays: {
-        type: [String], // Example: ["Monday", "Wednesday", "Friday"]
-        required: true,
-      },
-      timeSlots: {
-        type: [
-          {
-            day: String, // Example: "Monday"
-            slots: [
-              {
-                startTime: String, // Example: "09:00 AM"
-                endTime: String, // Example: "10:00 AM"
-              },
-            ],
-          },
-        ],
-        default: [],
-      },
-      blockedDates: { type: [Date], default: [] } // ❌ Removed the trailing comma
-    },
+    capacity: { type: Number, required: true },
+    schedule: { type: scheduleSchema, required: true },
   },
   { timestamps: true }
 );
 
-module.exports = mongoose.model("Class", ClassSchema);
+const Class = mongoose.model("Class", classSchema);
+export default Class;
