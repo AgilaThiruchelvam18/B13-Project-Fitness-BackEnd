@@ -117,7 +117,7 @@ exports.updateClass = async (req, res) => {
       fitnessClass.schedule.oneTimeStartTime = newTimeSlot.startTime;
       fitnessClass.schedule.oneTimeEndTime = newTimeSlot.endTime;
     } else {
-      fitnessClass.schedule.timeSlots.set(newDate, recurringTimeSlots);
+      fitnessClass.schedule.timeSlots.set(recurringTimeSlots);
     }
 
     await fitnessClass.save();
