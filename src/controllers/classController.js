@@ -107,35 +107,27 @@ exports.updateClass = async (req, res) => {
     if (!fitnessClass) return res.status(404).json({ message: "Class not found" });
 
     // Prevent empty time slots update
-    if (fitnessClass.schedule.scheduleType === "Recurrent" && (!recurringTimeSlots || recurringTimeSlots.length === 0)) {
+    if (fitnessClass.schedule.scheduleType !== "One-time" && (!recurringTimeSlots || recurringTimeSlots.length === 0)) {
       return res.status(400).json({ message: "Recurring time slots cannot be empty." });
     }
 
     // Update based on schedule type
     if (fitnessClass.schedule.scheduleType === "One-time") {
-      if (!newDate || !newTimeSlot?.startTime || !newTimeSlot?.endTime) {
-        return res.status(400).json({ message: "One-time class requires a valid date and time slots." });
-      }
       fitnessClass.schedule.oneTimeDate = newDate;
       fitnessClass.schedule.oneTimeStartTime = newTimeSlot.startTime;
       fitnessClass.schedule.oneTimeEndTime = newTimeSlot.endTime;
     } else {
-      // Ensure each recurring time slot has required fields
-      const validTimeSlots = recurringTimeSlots.filter(slot => slot.day && slot.startTime && slot.endTime);
-      if (validTimeSlots.length !== recurringTimeSlots.length) {
-        return res.status(400).json({ message: "Each recurring time slot must have a day, startTime, and endTime." });
-      }
-      fitnessClass.schedule.timeSlots = validTimeSlots; // ✅ Correct way to update array
+      fitnessClass.schedule.timeSlots.set(recurringTimeSlots);
     }
 
     await fitnessClass.save();
-    res.status(200).json({ message: "Class rescheduled successfully!", updatedClass: fitnessClass });
+    
+    res.status(200).json({ message: "Class rescheduled successfully!" });
   } catch (error) {
     console.error("Error rescheduling class:", error);
-    res.status(500).json({ message: "Internal Server Error", error: error.message });
+    res.status(500).json({ message: "Internal Server Error" });
   }
 };
-
 
 
 // @desc    Delete a class
