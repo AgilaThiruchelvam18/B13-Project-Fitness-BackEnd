@@ -13,13 +13,8 @@ const classSchema = new mongoose.Schema({
     oneTimeStartTime: { type: String },
     oneTimeEndTime: { type: String },
     enabledDays: [{ type: String }],
-    timeSlots: [
-      {
-        day: { type: String, required: true }, // Add a day field
-        startTime: { type: String, required: true },
-        endTime: { type: String, required: true },
-      },
-    ],    blockedDates: [{ type: Date }],
+    timeSlots: { type: Map, of: [{ day:String,startTime: String, endTime: String }] },
+    blockedDates: [{ type: Date }],
     startDate: { type: Date },
     endDate: { type: Date },
   },
