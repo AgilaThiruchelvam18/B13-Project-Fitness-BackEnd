@@ -102,9 +102,9 @@ exports.updateClass = async (req, res) => {
   const { classId } = req.params;
   const { newDate, newTimeSlot } = req.body;
 
-  if (!newDate || !newTimeSlot?.startTime || !newTimeSlot?.endTime) {
-    return res.status(400).json({ message: "Invalid request. Date and time slot are required." });
-  }
+  // if (!newDate || !newTimeSlot?.startTime || !newTimeSlot?.endTime) {
+  //   return res.status(400).json({ message: "Invalid request. Date and time slot are required." });
+  // }
 
   try {
     const fitnessClass = await Class.findById(classId).populate("participants", "email");
