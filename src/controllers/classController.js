@@ -100,60 +100,35 @@ exports.getClassById = async (req, res) => {
 // @access  Trainer only
 exports.updateClass = async (req, res) => {
   const { classId } = req.params;
-  const { newDate, newTimeSlot } = req.body;
-
-  // if (!newDate || !newTimeSlot?.startTime || !newTimeSlot?.endTime) {
-  //   return res.status(400).json({ message: "Invalid request. Date and time slot are required." });
-  // }
+  const { newDate, newTimeSlot, recurringTimeSlots } = req.body;
 
   try {
-    const fitnessClass = await Class.findById(classId).populate("participants", "email");
+    const fitnessClass = await Class.findById(classId);
+    if (!fitnessClass) return res.status(404).json({ message: "Class not found" });
 
-    if (!fitnessClass) {
-      return res.status(404).json({ message: "Class not found" });
+    // Prevent empty time slots update
+    if (fitnessClass.schedule.scheduleType !== "One-time" && (!recurringTimeSlots || recurringTimeSlots.length === 0)) {
+      return res.status(400).json({ message: "Recurring time slots cannot be empty." });
     }
 
-    // Update schedule based on class type
+    // Update based on schedule type
     if (fitnessClass.schedule.scheduleType === "One-time") {
       fitnessClass.schedule.oneTimeDate = newDate;
       fitnessClass.schedule.oneTimeStartTime = newTimeSlot.startTime;
       fitnessClass.schedule.oneTimeEndTime = newTimeSlot.endTime;
     } else {
-      // Ensure timeSlots is an object
-      if (!fitnessClass.schedule.timeSlots) {
-        fitnessClass.schedule.timeSlots = {};
-      }
-
-      // If date already exists, add to existing array; otherwise, create new array
-      if (Array.isArray(fitnessClass.schedule.timeSlots[newDate])) {
-        fitnessClass.schedule.timeSlots[newDate].push(newTimeSlot);
-      } else {
-        fitnessClass.schedule.timeSlots[newDate] = [newTimeSlot];
-      }
+      fitnessClass.schedule.timeSlots.set(newDate, recurringTimeSlots);
     }
 
     await fitnessClass.save();
-
-    // Fetch participant emails
-    const participantEmails = fitnessClass.participants.map(user => user.email).filter(email => email);
-
-    if (participantEmails.length > 0) {
-      const emailOptions = {
-        from: process.env.EMAIL_USER,
-        to: participantEmails.join(","), // Send to all participants
-        subject: "Class Rescheduled Notification",
-        text: `The class "${fitnessClass.title}" has been rescheduled to ${newDate} from ${newTimeSlot.startTime} to ${newTimeSlot.endTime}.`,
-      };
-
-      await transporter.sendMail(emailOptions);
-    }
-
-    res.status(200).json({ message: "Class rescheduled successfully and email notifications sent!" });
+    
+    res.status(200).json({ message: "Class rescheduled successfully!" });
   } catch (error) {
     console.error("Error rescheduling class:", error);
     res.status(500).json({ message: "Internal Server Error" });
   }
 };
+
 
 // @desc    Delete a class
 // @route   DELETE /api/classes/:id
