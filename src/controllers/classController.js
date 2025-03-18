@@ -2,6 +2,8 @@ const mongoose = require("mongoose");
 const Class = require("../models/Class.js");
 const Trainer = require("../models/Trainer.js");
 const User = require("../models/User");
+const nodemailer = require("nodemailer");
+
 const transporter = nodemailer.createTransport({
   service: "Gmail",
   auth: {
