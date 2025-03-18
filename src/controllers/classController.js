@@ -1,7 +1,14 @@
 const mongoose = require("mongoose");
 const Class = require("../models/Class.js");
 const Trainer = require("../models/Trainer.js");
-
+const User = require("../models/User");
+const transporter = nodemailer.createTransport({
+  service: "Gmail",
+  auth: {
+    user: process.env.EMAIL_USER,
+    pass: process.env.EMAIL_PASS,
+  },
+});
 // @desc    Create a new class
 // @route   POST /api/classes
 // @access  Trainer only
@@ -90,19 +97,38 @@ exports.getClassById = async (req, res) => {
 // @route   PUT /api/classes/:id
 // @access  Trainer only
 exports.updateClass = async (req, res) => {
+  const { classId } = req.params;
+  const { newDate, newTimeSlot } = req.body;
+
   try {
-    const { newDate, newTimeSlot } = req.body;
-    const updatedClass = await Class.findByIdAndUpdate(req.params.id, {
-      "schedule.date": newDate,
-      "schedule.startTime": newTimeSlot.startTime,
-      "schedule.endTime": newTimeSlot.endTime,
-    }, { new: true });
+    const fitnessClass = await Class.findById(classId);
+    if (!fitnessClass) return res.status(404).json({ message: "Class not found" });
 
-    if (!updatedClass) return res.status(404).json({ message: "Class not found" });
+    // Update schedule based on class type
+    if (fitnessClass.schedule.scheduleType === "One-time") {
+      fitnessClass.schedule.oneTimeDate = newDate;
+      fitnessClass.schedule.oneTimeStartTime = newTimeSlot.startTime;
+      fitnessClass.schedule.oneTimeEndTime = newTimeSlot.endTime;
+    } else {
+      fitnessClass.schedule.timeSlots.set(newDate, [newTimeSlot]);
+    }
 
-    res.json({ message: "Class rescheduled successfully", updatedClass });
+    await fitnessClass.save();
+
+    // Send email notification to users
+    const emailOptions = {
+      from: process.env.EMAIL_USER,
+      to: "user@example.com", // Replace with user emails
+      subject: "Class Rescheduled Notification",
+      text: `The class ${fitnessClass.title} has been rescheduled to ${newDate} at ${newTimeSlot.startTime} - ${newTimeSlot.endTime}.`,
+    };
+    
+    await transporter.sendMail(emailOptions);
+    
+    res.status(200).json({ message: "Class rescheduled successfully and email notification sent!" });
   } catch (error) {
-    res.status(500).json({ message: "Server error", error });
+    console.error("Error rescheduling class:", error);
+    res.status(500).json({ message: "Internal Server Error" });
   }
 };
 
