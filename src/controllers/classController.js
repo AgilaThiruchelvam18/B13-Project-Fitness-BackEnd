@@ -102,9 +102,16 @@ exports.updateClass = async (req, res) => {
   const { classId } = req.params;
   const { newDate, newTimeSlot } = req.body;
 
+  if (!newDate || !newTimeSlot?.startTime || !newTimeSlot?.endTime) {
+    return res.status(400).json({ message: "Invalid request. Date and time slot are required." });
+  }
+
   try {
-    const fitnessClass = await Class.findById(classId);
-    if (!fitnessClass) return res.status(404).json({ message: "Class not found" });
+    const fitnessClass = await Class.findById(classId).populate("participants", "email");
+
+    if (!fitnessClass) {
+      return res.status(404).json({ message: "Class not found" });
+    }
 
     // Update schedule based on class type
     if (fitnessClass.schedule.scheduleType === "One-time") {
@@ -112,22 +119,36 @@ exports.updateClass = async (req, res) => {
       fitnessClass.schedule.oneTimeStartTime = newTimeSlot.startTime;
       fitnessClass.schedule.oneTimeEndTime = newTimeSlot.endTime;
     } else {
-      fitnessClass.schedule.timeSlots.set(newDate, [newTimeSlot]);
+      // Ensure timeSlots is an object
+      if (!fitnessClass.schedule.timeSlots) {
+        fitnessClass.schedule.timeSlots = {};
+      }
+
+      // If date already exists, add to existing array; otherwise, create new array
+      if (Array.isArray(fitnessClass.schedule.timeSlots[newDate])) {
+        fitnessClass.schedule.timeSlots[newDate].push(newTimeSlot);
+      } else {
+        fitnessClass.schedule.timeSlots[newDate] = [newTimeSlot];
+      }
     }
 
     await fitnessClass.save();
 
-    // Send email notification to users
-    const emailOptions = {
-      from: process.env.EMAIL_USER,
-      to: "user@example.com", // Replace with user emails
-      subject: "Class Rescheduled Notification",
-      text: `The class ${fitnessClass.title} has been rescheduled to ${newDate} at ${newTimeSlot.startTime} - ${newTimeSlot.endTime}.`,
-    };
-    
-    await transporter.sendMail(emailOptions);
-    
-    res.status(200).json({ message: "Class rescheduled successfully and email notification sent!" });
+    // Fetch participant emails
+    const participantEmails = fitnessClass.participants.map(user => user.email).filter(email => email);
+
+    if (participantEmails.length > 0) {
+      const emailOptions = {
+        from: process.env.EMAIL_USER,
+        to: participantEmails.join(","), // Send to all participants
+        subject: "Class Rescheduled Notification",
+        text: `The class "${fitnessClass.title}" has been rescheduled to ${newDate} from ${newTimeSlot.startTime} to ${newTimeSlot.endTime}.`,
+      };
+
+      await transporter.sendMail(emailOptions);
+    }
+
+    res.status(200).json({ message: "Class rescheduled successfully and email notifications sent!" });
   } catch (error) {
     console.error("Error rescheduling class:", error);
     res.status(500).json({ message: "Internal Server Error" });
