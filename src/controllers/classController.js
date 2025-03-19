@@ -157,14 +157,18 @@ exports.updateClass = async (req, res) => {
     }
     // 🔹 Handle One-time class update
     if (fitnessClass.schedule.scheduleType === "One-time") {
-      if (!newTimeSlot?.startTime || !newTimeSlot?.endTime) {
+      const startTime = newTimeSlot?.startTime || req.body.oneTimeStartTime;
+      const endTime = newTimeSlot?.endTime || req.body.oneTimeEndTime;
+    
+      if (!startTime || !endTime) {
         return res.status(400).json({ message: "One-time class requires valid start and end times." });
       }
-      
+    
       fitnessClass.schedule.oneTimeDate = newDate || fitnessClass.schedule.oneTimeDate;
-      fitnessClass.schedule.oneTimeStartTime = newTimeSlot?.startTime || fitnessClass.schedule.oneTimeStartTime;
-      fitnessClass.schedule.oneTimeEndTime = newTimeSlot?.endTime || fitnessClass.schedule.oneTimeEndTime;
-    } else {
+      fitnessClass.schedule.oneTimeStartTime = startTime;
+      fitnessClass.schedule.oneTimeEndTime = endTime;
+    }
+     else {
       // 🔹 Handle Recurrent class update
       if (!Array.isArray(recurringTimeSlots) || recurringTimeSlots.length === 0) {
         return res.status(400).json({ message: "Recurrent schedule must include valid time slots." });
