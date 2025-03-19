@@ -55,14 +55,29 @@ exports.createClass = async (req, res) => {
     }
 
     // 🔹 Format timeSlots for saving
-    let formattedTimeSlots = [];
-    if (schedule.scheduleType === "Recurrent" && Array.isArray(schedule.timeSlots)) {
-      formattedTimeSlots = schedule.timeSlots.map(slot => ({
-        day: slot.day,
-        startTime: slot.startTime,
-        endTime: slot.endTime
-      }));
+    // let formattedTimeSlots = [];
+    // if (schedule.scheduleType === "Recurrent" && Array.isArray(schedule.timeSlots)) {
+    //   formattedTimeSlots = schedule.timeSlots.map(slot => ({
+    //     day: slot.day,
+    //     startTime: slot.startTime,
+    //     endTime: slot.endTime
+    //   }));
+    // }
+// 🔹 Format timeSlots correctly before saving
+let formattedTimeSlots = [];
+if (schedule.scheduleType === "Recurrent" && schedule.timeSlots) {
+  for (const [day, slots] of Object.entries(schedule.timeSlots)) {
+    if (Array.isArray(slots)) {
+      slots.forEach(slot => {
+        formattedTimeSlots.push({
+          day,
+          startTime: slot.startTime,
+          endTime: slot.endTime,
+        });
+      });
     }
+  }
+}
 
     // 🔹 Create New Class
     const newClass = new Class({
