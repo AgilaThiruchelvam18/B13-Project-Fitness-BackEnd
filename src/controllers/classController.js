@@ -30,21 +30,28 @@ exports.createClass = async (req, res) => {
     }
 
     // 🔹 Validate Recurrent Schedule
+    let formattedTimeSlots = [];
     if (schedule.scheduleType === "Recurrent") {
       if (!schedule.startDate || !schedule.endDate || !Array.isArray(schedule.enabledDays) || schedule.enabledDays.length === 0) {
         return res.status(400).json({ message: "Recurrent schedule must have start date, end date, and at least one selected day." });
       }
 
-      // Ensure timeSlots exist for each enabled day
-      if (!Array.isArray(schedule.timeSlots) || schedule.timeSlots.length === 0) {
-        return res.status(400).json({ message: "Recurrent schedule must have at least one valid time slot." });
+      if (schedule.timeSlots) {
+        for (const [day, slots] of Object.entries(schedule.timeSlots)) {
+          if (Array.isArray(slots)) {
+            slots.forEach(slot => {
+              formattedTimeSlots.push({
+                day,
+                startTime: slot.startTime,
+                endTime: slot.endTime,
+              });
+            });
+          }
+        }
       }
 
-      // Validate each time slot has day, startTime, and endTime
-      for (const slot of schedule.timeSlots) {
-        if (!slot.day || !slot.startTime || !slot.endTime) {
-          return res.status(400).json({ message: "Each time slot must include a day, start time, and end time." });
-        }
+      if (!formattedTimeSlots.length) {
+        return res.status(400).json({ message: "Recurrent schedule must have at least one valid time slot." });
       }
     }
 
@@ -53,31 +60,6 @@ exports.createClass = async (req, res) => {
     if (!trainer) {
       return res.status(404).json({ message: "Trainer not found" });
     }
-
-    // 🔹 Format timeSlots for saving
-    // let formattedTimeSlots = [];
-    // if (schedule.scheduleType === "Recurrent" && Array.isArray(schedule.timeSlots)) {
-    //   formattedTimeSlots = schedule.timeSlots.map(slot => ({
-    //     day: slot.day,
-    //     startTime: slot.startTime,
-    //     endTime: slot.endTime
-    //   }));
-    // }
-// 🔹 Format timeSlots correctly before saving
-let formattedTimeSlots = [];
-if (schedule.scheduleType === "Recurrent" && schedule.timeSlots) {
-  for (const [day, slots] of Object.entries(schedule.timeSlots)) {
-    if (Array.isArray(slots)) {
-      slots.forEach(slot => {
-        formattedTimeSlots.push({
-          day,
-          startTime: slot.startTime,
-          endTime: slot.endTime,
-        });
-      });
-    }
-  }
-}
 
     // 🔹 Create New Class
     const newClass = new Class({
@@ -96,7 +78,7 @@ if (schedule.scheduleType === "Recurrent" && schedule.timeSlots) {
         endDate: schedule.endDate || null,
         enabledDays: schedule.enabledDays || [],
         timeSlots: formattedTimeSlots,
-        blockedDates: schedule.blockedDates || []
+        blockedDates: schedule.blockedDates || [],
       },
       trainer: trainer._id, // Assign trainer
     });
@@ -111,6 +93,7 @@ if (schedule.scheduleType === "Recurrent" && schedule.timeSlots) {
     res.status(500).json({ message: "Server Error", error: error.message });
   }
 };
+
 
 
 // @desc    Get all classes
