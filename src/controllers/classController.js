@@ -14,10 +14,14 @@ const transporter = nodemailer.createTransport({
 // @desc    Create a new class
 // @route   POST /api/classes
 // @access  Trainer only
+const Class = require("../models/Class");
+const Trainer = require("../models/Trainer");
+
 exports.createClass = async (req, res) => {
   try {
     const { title, description, category, duration, price, capacity, schedule } = req.body;
 
+    // 🔹 Validate Schedule Type
     if (!["One-time", "Recurrent"].includes(schedule.scheduleType)) {
       return res.status(400).json({ message: "Invalid schedule type" });
     }
@@ -33,21 +37,22 @@ exports.createClass = async (req, res) => {
     let formattedTimeSlots = [];
     if (schedule.scheduleType === "Recurrent") {
       if (!schedule.startDate || !schedule.endDate || !Array.isArray(schedule.enabledDays) || schedule.enabledDays.length === 0) {
-        return res.status(400).json({ message: "Recurrent schedule must have start date, end date, and at least one selected day." });
+        return res.status(400).json({ message: "Recurrent schedule must have a start date, end date, and at least one selected day." });
       }
 
-      if (schedule.timeSlots) {
-        for (const [day, slots] of Object.entries(schedule.timeSlots)) {
-          if (Array.isArray(slots)) {
-            slots.forEach(slot => {
-              formattedTimeSlots.push({
-                date: new Date(slot.date), 
-                startTime: slot.startTime,
-                endTime: slot.endTime,
-              });
-            });
+      if (Array.isArray(schedule.timeSlots)) {
+        schedule.timeSlots.forEach((slot) => {
+          if (!slot.date || !slot.startTime || !slot.endTime) {
+            return res.status(400).json({ message: "Each time slot must have a date, start time, and end time." });
           }
-        }
+
+          formattedTimeSlots.push({
+            date: new Date(slot.date),
+            // day: slot.day, // Assuming 'day' is already a string (Monday, Tuesday, etc.)
+            startTime: slot.startTime,
+            endTime: slot.endTime,
+          });
+        });
       }
 
       if (!formattedTimeSlots.length) {
@@ -90,9 +95,11 @@ exports.createClass = async (req, res) => {
 
     res.status(201).json(newClass);
   } catch (error) {
+    console.error("Error creating class:", error);
     res.status(500).json({ message: "Server Error", error: error.message });
   }
 };
+
 
 
 

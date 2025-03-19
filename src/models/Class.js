@@ -16,11 +16,12 @@ const classSchema = new mongoose.Schema({
     timeSlots: [
       {
         date: { type: Date, required: true },
+        // day: { type: String, required: true },
         startTime: { type: String, required: true },
         endTime: { type: String, required: true },
       }
     ],
-        blockedDates: [{ type: Date }],
+        // blockedDates: [{ type: Date }],
     startDate: { type: Date },
     endDate: { type: Date },
   },
