@@ -136,7 +136,7 @@ exports.getClassById = async (req, res) => {
 // @access  Trainer only
 exports.updateClass = async (req, res) => {
   const { classId } = req.params;
-  const { newDate, newTimeSlot, recurringTimeSlots } = req.body;
+  const { newDate, newTimeSlot, recurringTimeSlots, updatedSlot } = req.body; // `updatedSlot` indicates which slot to update
 
   try {
     const fitnessClass = await Class.findById(classId);
@@ -147,7 +147,7 @@ exports.updateClass = async (req, res) => {
       return res.status(400).json({ message: "Recurring time slots cannot be empty." });
     }
 
-    // Update based on schedule type
+    // Handle One-time class update
     if (fitnessClass.schedule.scheduleType === "One-time") {
       if (!newDate || !newTimeSlot?.startTime || !newTimeSlot?.endTime) {
         return res.status(400).json({ message: "One-time class requires a valid date and time slots." });
@@ -156,25 +156,41 @@ exports.updateClass = async (req, res) => {
       fitnessClass.schedule.oneTimeStartTime = newTimeSlot.startTime;
       fitnessClass.schedule.oneTimeEndTime = newTimeSlot.endTime;
     } else {
+      // Handle Recurrent class update
       // Validate each recurring time slot
       const validTimeSlots = recurringTimeSlots.filter(slot => slot.day && slot.startTime && slot.endTime);
-
       if (validTimeSlots.length !== recurringTimeSlots.length) {
         return res.status(400).json({ message: "Each recurring time slot must have a day, startTime, and endTime." });
       }
 
-      // Correctly update the timeSlots array
-      fitnessClass.schedule.timeSlots = validTimeSlots;
+      // Update a particular slot (if `updatedSlot` is provided)
+      if (updatedSlot) {
+        const slotIndex = fitnessClass.schedule.timeSlots.findIndex(
+          slot => slot.day === updatedSlot.day && slot.startTime === updatedSlot.startTime
+        );
+
+        if (slotIndex !== -1) {
+          // Update only the selected slot
+          fitnessClass.schedule.timeSlots[slotIndex].startTime = updatedSlot.startTime;
+          fitnessClass.schedule.timeSlots[slotIndex].endTime = updatedSlot.endTime;
+        } else {
+          return res.status(404).json({ message: "Time slot not found for update." });
+        }
+      } else {
+        // If no specific slot to update, update all slots
+        fitnessClass.schedule.timeSlots = validTimeSlots;
+      }
     }
 
     await fitnessClass.save();
-    
+
     res.status(200).json({ message: "Class rescheduled successfully!", updatedClass: fitnessClass });
   } catch (error) {
     console.error("Error rescheduling class:", error);
     res.status(500).json({ message: "Internal Server Error", error: error.message });
   }
 };
+
 
 
 
