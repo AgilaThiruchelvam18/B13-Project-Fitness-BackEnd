@@ -15,7 +15,7 @@ const classSchema = new mongoose.Schema({
     enabledDays: [{ type: String }],
     timeSlots: [
       {
-        day: { type: String, required: true },
+        date: { type: Date, required: true },
         startTime: { type: String, required: true },
         endTime: { type: String, required: true },
       }
