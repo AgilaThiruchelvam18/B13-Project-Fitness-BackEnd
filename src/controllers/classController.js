@@ -142,6 +142,7 @@ exports.getClassById = async (req, res) => {
 exports.updateClass = async (req, res) => {
   const { classId } = req.params;
   const { newDate, newTimeSlot, recurringTimeSlots, updatedSlot } = req.body; // `updatedSlot` indicates which slot to update
+  console.log("🔹 Received Update Payload:", req.body);
 
   try {
     const fitnessClass = await Class.findById(classId);
