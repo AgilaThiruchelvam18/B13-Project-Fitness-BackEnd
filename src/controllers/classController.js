@@ -151,15 +151,18 @@ exports.updateClass = async (req, res) => {
     if (fitnessClass.schedule.scheduleType === "Recurrent" && (!recurringTimeSlots || recurringTimeSlots.length === 0)) {
       return res.status(400).json({ message: "Recurring time slots cannot be empty." });
     }
-
+    if (!newDate && !fitnessClass.schedule.oneTimeDate) {
+      return res.status(400).json({ message: "One-time class requires a valid date." });
+    }
     // 🔹 Handle One-time class update
     if (fitnessClass.schedule.scheduleType === "One-time") {
-      if (!newDate || !newTimeSlot?.startTime || !newTimeSlot?.endTime) {
-        return res.status(400).json({ message: "One-time class requires a valid date and time slots." });
+      if (!newTimeSlot?.startTime || !newTimeSlot?.endTime) {
+        return res.status(400).json({ message: "One-time class requires valid start and end times." });
       }
-      fitnessClass.schedule.oneTimeDate = new Date(newDate).toISOString(); // Ensure correct date format
-      fitnessClass.schedule.oneTimeStartTime = newTimeSlot.startTime;
-      fitnessClass.schedule.oneTimeEndTime = newTimeSlot.endTime;
+      
+      fitnessClass.schedule.oneTimeDate = newDate || fitnessClass.schedule.oneTimeDate;
+      fitnessClass.schedule.oneTimeStartTime = newTimeSlot?.startTime || fitnessClass.schedule.oneTimeStartTime;
+      fitnessClass.schedule.oneTimeEndTime = newTimeSlot?.endTime || fitnessClass.schedule.oneTimeEndTime;
     } else {
       // 🔹 Handle Recurrent class update
       if (!Array.isArray(recurringTimeSlots) || recurringTimeSlots.length === 0) {
