@@ -22,24 +22,49 @@ exports.createClass = async (req, res) => {
       return res.status(400).json({ message: "Invalid schedule type" });
     }
 
-    // 🔹 Validate One-time schedule
+    // 🔹 Validate One-time Schedule
     if (schedule.scheduleType === "One-time") {
       if (!schedule.oneTimeDate || !schedule.oneTimeStartTime || !schedule.oneTimeEndTime) {
-        return res.status(400).json({ message: "One-time schedule must have a date and start/end time." });
+        return res.status(400).json({ message: "One-time schedule must include a date and start/end time." });
       }
     }
 
-    // 🔹 Validate Recurrent schedule
+    // 🔹 Validate Recurrent Schedule
     if (schedule.scheduleType === "Recurrent") {
-      if (!schedule.startDate || !schedule.endDate || schedule.enabledDays.length === 0) {
-        return res.status(400).json({ message: "Recurrent schedule must have start date, end date, and selected days." });
+      if (!schedule.startDate || !schedule.endDate || !Array.isArray(schedule.enabledDays) || schedule.enabledDays.length === 0) {
+        return res.status(400).json({ message: "Recurrent schedule must have start date, end date, and at least one selected day." });
+      }
+
+      // Ensure timeSlots exist for each enabled day
+      if (!Array.isArray(schedule.timeSlots) || schedule.timeSlots.length === 0) {
+        return res.status(400).json({ message: "Recurrent schedule must have at least one valid time slot." });
+      }
+
+      // Validate each time slot has day, startTime, and endTime
+      for (const slot of schedule.timeSlots) {
+        if (!slot.day || !slot.startTime || !slot.endTime) {
+          return res.status(400).json({ message: "Each time slot must include a day, start time, and end time." });
+        }
       }
     }
+
+    // 🔹 Ensure Trainer Exists
     const trainer = await Trainer.findById(req.user._id);
     if (!trainer) {
       return res.status(404).json({ message: "Trainer not found" });
     }
 
+    // 🔹 Format timeSlots for saving
+    let formattedTimeSlots = [];
+    if (schedule.scheduleType === "Recurrent" && Array.isArray(schedule.timeSlots)) {
+      formattedTimeSlots = schedule.timeSlots.map(slot => ({
+        day: slot.day,
+        startTime: slot.startTime,
+        endTime: slot.endTime
+      }));
+    }
+
+    // 🔹 Create New Class
     const newClass = new Class({
       title,
       description,
@@ -47,18 +72,31 @@ exports.createClass = async (req, res) => {
       duration,
       price,
       capacity,
-      schedule,
-      trainer: req.user.id, // Assign trainer to class
+      schedule: {
+        scheduleType: schedule.scheduleType,
+        oneTimeDate: schedule.oneTimeDate || null,
+        oneTimeStartTime: schedule.oneTimeStartTime || null,
+        oneTimeEndTime: schedule.oneTimeEndTime || null,
+        startDate: schedule.startDate || null,
+        endDate: schedule.endDate || null,
+        enabledDays: schedule.enabledDays || [],
+        timeSlots: formattedTimeSlots,
+        blockedDates: schedule.blockedDates || []
+      },
+      trainer: trainer._id, // Assign trainer
     });
 
+    // 🔹 Save Class & Update Trainer
     await newClass.save();
     trainer.classes.push(newClass._id);
     await trainer.save();
+
     res.status(201).json(newClass);
   } catch (error) {
     res.status(500).json({ message: "Server Error", error: error.message });
   }
 };
+
 
 // @desc    Get all classes
 // @route   GET /api/classes
