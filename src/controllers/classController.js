@@ -14,8 +14,6 @@ const transporter = nodemailer.createTransport({
 // @desc    Create a new class
 // @route   POST /api/classes
 // @access  Trainer only
-const Class = require("../models/Class");
-const Trainer = require("../models/Trainer");
 
 exports.createClass = async (req, res) => {
   try {
