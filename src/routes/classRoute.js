@@ -24,7 +24,7 @@ router.delete("/:classId/cancel", protectTrainer, deleteClass);
 router.get("/:id", getClassById);
 
 // Get all classes (Public or protected if needed)
-router.get("/upcomingclasses", getAllClasses);
+router.get("/", getAllClasses);
 router.get("/",protectTrainer, getScheduledClasses);
 
 // Get classes created by the logged-in trainer
