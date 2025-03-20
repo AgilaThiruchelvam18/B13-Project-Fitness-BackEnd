@@ -181,27 +181,29 @@ exports.updateClass = async (req, res) => {
       }
 
       // 🔹 Update a particular slot (if `updatedSlot` is provided)
-      if (updatedSlot) {
-        const slotIndex = fitnessClass.schedule.timeSlots.findIndex(
-          slot => slot.date.toISOString() === new Date(updatedSlot.date).toISOString() && slot.startTime === updatedSlot.startTime
-        );
+      // Update a specific time slot if 'updatedSlot' is provided
+if (updatedSlot) {
+  const slotIndex = fitnessClass.schedule.timeSlots.findIndex(
+      slot => slot._id.toString() === updatedSlot._id
+  );
 
-        if (slotIndex !== -1) {
-          // Update only the selected slot
-          fitnessClass.schedule.timeSlots[slotIndex].startTime = updatedSlot.startTime;
-          fitnessClass.schedule.timeSlots[slotIndex].endTime = updatedSlot.endTime;
-        } else {
-          return res.status(404).json({ message: "Time slot not found for update." });
-        }
-      } else {
-        // 🔹 If no specific slot to update, update all slots
-        fitnessClass.schedule.timeSlots = validTimeSlots.map(slot => ({
-          date: new Date(slot.date), // Ensure date is stored correctly
-          day: slot.day,
-          startTime: slot.startTime,
-          endTime: slot.endTime,
-        }));
-      }
+  if (slotIndex !== -1) {
+      // Update only the selected slot
+      fitnessClass.schedule.timeSlots[slotIndex].startTime = updatedSlot.startTime;
+      fitnessClass.schedule.timeSlots[slotIndex].endTime = updatedSlot.endTime;
+  } else {
+      return res.status(404).json({ message: "Time slot not found for update." });
+  }
+} else {
+  // If no specific slot to update, replace all slots
+  fitnessClass.schedule.timeSlots = validTimeSlots.map(slot => ({
+      date: new Date(slot.date),
+      day: slot.day,
+      startTime: slot.startTime,
+      endTime: slot.endTime,
+  }));
+}
+
     }
 
     await fitnessClass.save();
