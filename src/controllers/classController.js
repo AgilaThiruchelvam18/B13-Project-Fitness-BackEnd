@@ -40,13 +40,13 @@ exports.createClass = async (req, res) => {
 
       if (Array.isArray(schedule.timeSlots)) {
         schedule.timeSlots.forEach((slot) => {
-          if (!slot.date || !slot.startTime || !slot.endTime) {
+          if (!slot.date||!slot.day || !slot.startTime || !slot.endTime) {
             return res.status(400).json({ message: "Each time slot must have a date, start time, and end time." });
           }
 
           formattedTimeSlots.push({
             date: new Date(slot.date),
-            // day: slot.day, // Assuming 'day' is already a string (Monday, Tuesday, etc.)
+            day: slot.day, // Assuming 'day' is already a string (Monday, Tuesday, etc.)
             startTime: slot.startTime,
             endTime: slot.endTime,
           });
@@ -175,7 +175,7 @@ exports.updateClass = async (req, res) => {
       }
 
       // 🔹 Validate each recurring time slot
-      const validTimeSlots = recurringTimeSlots.filter(slot => slot.date && slot.startTime && slot.endTime);
+      const validTimeSlots = recurringTimeSlots.filter(slot => slot.date &&slot.day && slot.startTime && slot.endTime);
       if (validTimeSlots.length !== recurringTimeSlots.length) {
         return res.status(400).json({ message: "Each recurring time slot must have a date, startTime, and endTime." });
       }
@@ -197,6 +197,7 @@ exports.updateClass = async (req, res) => {
         // 🔹 If no specific slot to update, update all slots
         fitnessClass.schedule.timeSlots = validTimeSlots.map(slot => ({
           date: new Date(slot.date), // Ensure date is stored correctly
+          day: slot.day,
           startTime: slot.startTime,
           endTime: slot.endTime,
         }));
