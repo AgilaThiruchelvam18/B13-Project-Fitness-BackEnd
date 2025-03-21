@@ -1,64 +1,54 @@
 const Review = require("../models/Review");
-const Trainer = require("../models/Trainer");
-
-// Create a review
+const Booking = require("../models/Booking");
+// 
+// ✅ Submit a Review
 exports.createReview = async (req, res) => {
   try {
-    const { user, trainer, rating, comment } = req.body;
-    const newReview = new Review({ user, trainer, rating, comment });
-    await newReview.save();
+    const { trainerId, bookingId, rating, comment } = req.body;
+    const userId = req.user._id; // Extract user ID from token
 
-    // Update trainer's rating
-    const reviews = await Review.find({ trainer });
-    const avgRating = reviews.reduce((acc, r) => acc + r.rating, 0) / reviews.length;
+    // Check if booking exists and is completed
+    const booking = await Booking.findOne({ _id: bookingId, user: userId, status: "Completed" });
+    if (!booking) return res.status(400).json({ message: "Invalid booking or class not completed" });
 
-    await Trainer.findByIdAndUpdate(trainer, {
-      "ratings.averageRating": avgRating,
-      "ratings.totalReviews": reviews.length,
-    });
+    // Check if review already exists
+    const existingReview = await Review.findOne({ user: userId, booking: bookingId });
+    if (existingReview) return res.status(400).json({ message: "Review already submitted" });
 
-    res.status(201).json(newReview);
-  } catch (err) {
-    res.status(500).json({ message: "Error creating review", error: err.message });
+    const review = new Review({ user: userId, trainer: trainerId, booking: bookingId, rating, comment });
+    await review.save();
+
+    res.status(201).json({ message: "Review submitted successfully", review });
+  } catch (error) {
+    res.status(500).json({ message: "Server error", error });
   }
 };
 
-// Get all reviews
-exports.getAllReviews = async (req, res) => {
+// ✅ Fetch Reviews for a Trainer
+exports.getTrainerReviews = async (req, res) => {
   try {
-    const reviews = await Review.find().populate("user trainer", "name");
+    const { trainerId } = req.params;
+    const reviews = await Review.find({ trainer: trainerId }).populate("user", "name");
     res.json(reviews);
-  } catch (err) {
-    res.status(500).json({ message: "Error fetching reviews", error: err.message });
+  } catch (error) {
+    res.status(500).json({ message: "Server error", error });
   }
 };
 
-// Get reviews for a specific trainer
-exports.getReviewsByTrainer = async (req, res) => {
+// ✅ Trainer Respond to a Review
+exports.respondToReview = async (req, res) => {
   try {
-    const reviews = await Review.find({ trainer: req.params.trainerId }).populate("user", "name");
-    res.json(reviews);
-  } catch (err) {
-    res.status(500).json({ message: "Error fetching trainer reviews", error: err.message });
-  }
-};
+    const { reviewId } = req.params;
+    const { response } = req.body;
+    
+    const review = await Review.findById(reviewId);
+    if (!review) return res.status(404).json({ message: "Review not found" });
 
-// Update a review
-exports.updateReview = async (req, res) => {
-  try {
-    const updatedReview = await Review.findByIdAndUpdate(req.params.id, req.body, { new: true });
-    res.json(updatedReview);
-  } catch (err) {
-    res.status(500).json({ message: "Error updating review", error: err.message });
-  }
-};
+    review.response = response;
+    await review.save();
 
-// Delete a review
-exports.deleteReview = async (req, res) => {
-  try {
-    await Review.findByIdAndDelete(req.params.id);
-    res.json({ message: "Review deleted successfully" });
-  } catch (err) {
-    res.status(500).json({ message: "Error deleting review", error: err.message });
+    res.json({ message: "Response added", review });
+  } catch (error) {
+    res.status(500).json({ message: "Server error", error });
   }
 };

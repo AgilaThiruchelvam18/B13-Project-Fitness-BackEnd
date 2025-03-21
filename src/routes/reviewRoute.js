@@ -1,11 +1,11 @@
 const express = require("express");
-const router = express.Router();
-const reviewController = require("../controllers/reviewController");
+const { createReview, getTrainerReviews, respondToReview } = require("../controllers/reviewController");
+const { protectCustomer, protectTrainer } = require("../middleware/authMiddleware");
 
-router.post("/", reviewController.createReview);
-router.get("/", reviewController.getAllReviews);
-router.get("/:trainerId", reviewController.getReviewsByTrainer);
-router.put("/:id", reviewController.updateReview);
-router.delete("/:id", reviewController.deleteReview);
+const router = express.Router();
+
+router.post("/", protectCustomer, createReview); // Submit Review
+router.get("/:trainerId", getTrainerReviews); // Fetch Reviews for a Trainer
+router.put("/:reviewId/response", protect, respondToReview); // Trainer responds
 
 module.exports = router;
