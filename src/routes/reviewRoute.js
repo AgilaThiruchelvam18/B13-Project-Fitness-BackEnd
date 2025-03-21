@@ -6,6 +6,6 @@ const router = express.Router();
 
 router.post("/", protectCustomer, createReview); // Submit Review
 router.get("/:trainerId", getTrainerReviews); // Fetch Reviews for a Trainer
-router.put("/:reviewId/response", protect, respondToReview); // Trainer responds
+router.put("/:reviewId/response", protectTrainer, respondToReview); // Trainer responds
 
 module.exports = router;
