@@ -2,6 +2,18 @@ const Review = require("../models/Review");
 const Booking = require("../models/Booking");
 // 
 // ✅ Submit a Review
+const Review = require("../models/reviewModel");
+const Booking = require("../models/bookingModel");
+
+// ✅ Get all reviews for a logged-in user
+exports.getReviews = async (req, res) => {
+  try {
+    const reviews = await Review.find({ userId: req.user._id });
+    res.status(200).json(reviews);
+  } catch (error) {
+    res.status(500).json({ message: "Error fetching reviews", error });
+  }
+};
 exports.createReview = async (req, res) => {
   try {
     const { trainerId, bookingId, rating, comment } = req.body;
