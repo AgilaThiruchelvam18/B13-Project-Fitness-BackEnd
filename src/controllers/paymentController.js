@@ -10,53 +10,44 @@ const razorpay = new Razorpay({
 // ✅ Create an Order
 exports.createOrder = async (req, res) => { // 🟢 Added 'async' here
   try {
-      console.log("🔹 Received Payment Request:", req.body); 
+    console.log("Received Payment Request:", req.body);
 
-      const { amount, bookingId, userId } = req.body;
+    const { amount, bookingId, userId } = req.body;
+    if (!amount || !bookingId || !userId) {
+        return res.status(400).json({ success: false, message: "Amount, Booking ID, and User ID are required" });
+    }
 
-      if (!amount || !bookingId || !userId) {
-          console.error("❌ Missing required fields:", { amount, bookingId, userId });
-          return res.status(400).json({ success: false, message: "Amount, Booking ID, and User ID are required" });
-      }
+    const options = {
+        amount: amount * 100, // Convert to paise
+        currency: "INR",
+        receipt: `receipt_${bookingId}`,
+        payment_capture: 1, // Auto capture payment
+    };
 
-      const options = {
-          amount: amount * 100, // Convert amount to paise (Razorpay requires it)
-          currency: "INR",
-          receipt: bookingId,
-      };
+    console.log("Creating Razorpay Order...");
+    const order = await razorpay.orders.create(options);
 
-      console.log("🟢 Creating Razorpay Order with options:", options);
+    if (!order) {
+        return res.status(500).json({ success: false, message: "Failed to create order" });
+    }
 
-      // 🟢 Create order with Razorpay
-      const order = await razorpay.orders.create(options); // ✅ 'await' now works inside async function
+    console.log("Razorpay Order Created:", order);
 
-      if (!order || !order.id) {
-          console.error("❌ Razorpay Order Creation Failed, Order Response:", order);
-          return res.status(500).json({ success: false, message: "Failed to create order with Razorpay" });
-      }
+    const newPayment = new Payment({
+        userId,
+        bookingId,
+        razorpayOrderId: order.id,
+        amount,
+        status: "Pending",
+    });
 
-      console.log("✅ Razorpay Order Created Successfully:", order);
+    await newPayment.save();
 
-      // 🟢 Save payment in DB with "Pending" status
-      const newPayment = new Payment({
-          userId,
-          bookingId,
-          razorpayOrderId: order.id,
-          amount,
-          status: "Pending",
-      });
-
-      console.log("🟢 Saving Payment to DB:", newPayment);
-
-      await newPayment.save();
-
-      console.log("✅ Payment Successfully Saved in DB");
-
-      res.json({ success: true, order });
-  } catch (error) {
-      console.error("❌ Error creating order:", error);
-      res.status(500).json({ success: false, message: "Internal Server Error", error: error.message });
-  }
+    res.json({ success: true, order });
+} catch (error) {
+    console.error("Error creating order:", error);
+    res.status(500).json({ success: false, message: "Internal Server Error" });
+}
 };
 
 
