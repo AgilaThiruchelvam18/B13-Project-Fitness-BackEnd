@@ -53,7 +53,7 @@ exports.createReview = async (req, res) => {
 exports.getTrainerReviews = async (req, res) => {
   try {
     const { trainerId } = req.params;
-    const reviews = await Review.find({ trainer: trainerId }).populate("user", "name");
+    const reviews = await Review.find({ trainer: trainerId }).populate("user", "userName");
     res.json(reviews);
   } catch (error) {
     res.status(500).json({ message: "Server error", error });
