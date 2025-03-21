@@ -1,58 +1,54 @@
-const Payment = require("../models/Payment");
-const sendEmail = require("../utils/emailService");
-const User = require("../models/User");
-exports.processPayment = async (req, res) => {
+const Razorpay = require("razorpay");
+const crypto = require("crypto");
+require("dotenv").config();
+const Booking = require("../models/Booking");
+
+const razorpay = new Razorpay({
+  key_id: process.env.RAZORPAY_KEY_ID,
+  key_secret: process.env.RAZORPAY_KEY_SECRET,
+});
+
+// 🛒 Create Order API
+exports.createOrder = async (req, res) => {
   try {
-    const { userId, amount, paymentMethod, transactionId } = req.body;
+    const { amount, currency = "INR", bookingId } = req.body;
 
-    const payment = new Payment({
-      user: userId,
-      amount,
-      transactionId,
-      status: "Completed",
-    });
+    const options = {
+      amount: amount * 100, // Razorpay works with paise (multiply by 100)
+      currency,
+      receipt: `receipt_${bookingId}`,
+      payment_capture: 1,
+    };
 
-    await payment.save();
+    const order = await razorpay.orders.create(options);
 
-    // Fetch user email
-    const user = await User.findById(userId);
-
-    // Send payment receipt email
-    await sendEmail(
-      user.email,
-      "Payment Receipt - Fitness Booking",
-      `<p>Dear ${user.name},</p>
-      <p>Thank you for your payment of <strong>$${amount}</strong> for your fitness class.</p>
-      <p>Payment Method: ${paymentMethod}</p>
-      <p>Transaction ID: ${transactionId}</p>
-      <p>Receipt: <strong>PAID</strong></p>
-      <p>We appreciate your business!</p>`
-    );
-
-    res.status(201).json({ message: "Payment successful, receipt sent." });
+    res.json({ success: true, order, bookingId });
   } catch (error) {
-    res.status(500).json({ message: "Payment processing failed", error: error.message });
+    console.error("Error creating order:", error);
+    res.status(500).json({ success: false, message: "Error creating payment order" });
   }
 };
 
-
-// Get all payments
-exports.getAllPayments = async (req, res) => {
+// ✅ Verify Payment API
+exports.verifyPayment = async (req, res) => {
   try {
-    const payments = await Payment.find().populate("user booking");
-    res.json(payments);
-  } catch (err) {
-    res.status(500).json({ message: "Error fetching payments", error: err.message });
-  }
-};
+    const { razorpay_order_id, razorpay_payment_id, razorpay_signature, bookingId } = req.body;
 
-// Get payment by ID
-exports.getPaymentById = async (req, res) => {
-  try {
-    const payment = await Payment.findById(req.params.id).populate("user booking");
-    if (!payment) return res.status(404).json({ message: "Payment not found" });
-    res.json(payment);
-  } catch (err) {
-    res.status(500).json({ message: "Error fetching payment", error: err.message });
+    const expectedSignature = crypto
+      .createHmac("sha256", process.env.RAZORPAY_KEY_SECRET)
+      .update(`${razorpay_order_id}|${razorpay_payment_id}`)
+      .digest("hex");
+
+    if (expectedSignature !== razorpay_signature) {
+      return res.status(400).json({ success: false, message: "Invalid signature" });
+    }
+
+    // ✅ Update booking as paid in DB (modify according to your schema)
+    await Booking.findByIdAndUpdate(bookingId, { status: "Paid" });
+
+    res.json({ success: true, message: "Payment verified successfully" });
+  } catch (error) {
+    console.error("Payment verification failed:", error);
+    res.status(500).json({ success: false, message: "Error verifying payment" });
   }
 };
