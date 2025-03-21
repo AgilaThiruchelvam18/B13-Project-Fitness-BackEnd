@@ -1,6 +1,6 @@
 const Review = require("../models/Review");
 const Booking = require("../models/Booking");
-// 
+const Trainer = require("../models/Trainer");
 
 // ✅ Get all reviews for a logged-in user
 // exports.getReviews = async (req, res) => {
