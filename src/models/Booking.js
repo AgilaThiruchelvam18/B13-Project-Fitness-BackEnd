@@ -8,6 +8,9 @@ const bookingSchema = new mongoose.Schema(
     category: { type: String, required: true }, // Yoga, Cardio, etc.
     price: { type: Number, required: true }, // Price of the class
     status: { type: String, enum: ["Booked", "Cancelled", "Completed"], default: "Booked" }, // Booking status
+    rating: { type: Number, min: 1, max: 5 },
+    feedback: { type: String },
+    date: { type: Date, required: true },
   },
   { timestamps: true }
 );

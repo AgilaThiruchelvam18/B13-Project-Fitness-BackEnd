@@ -50,6 +50,7 @@ exports.createBooking = async (req, res) => {
       trainer: trainerId,
       category,
       price,
+       date,
       status: "Booked",
     });
 
