@@ -7,6 +7,8 @@ exports.createReview = async (req, res) => {
     const { trainerId, bookingId, rating, comment } = req.body;
     const userId = req.user._id; // Extract user ID from token
 
+    if (!trainerId) return res.status(400).json({ message: "Trainer ID is required" });
+
     // Check if booking exists and is completed
     const booking = await Booking.findOne({ _id: bookingId, user: userId, status: "Completed" });
     if (!booking) return res.status(400).json({ message: "Invalid booking or class not completed" });
@@ -23,6 +25,7 @@ exports.createReview = async (req, res) => {
     res.status(500).json({ message: "Server error", error });
   }
 };
+
 
 // ✅ Fetch Reviews for a Trainer
 exports.getTrainerReviews = async (req, res) => {
