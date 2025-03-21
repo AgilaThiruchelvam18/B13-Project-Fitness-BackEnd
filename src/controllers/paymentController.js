@@ -12,17 +12,24 @@ exports.createOrder = async (req, res) => {
   try {
     const { amount, bookingId } = req.body;
 
-    // Create Razorpay Order
+    if (!amount || !bookingId) {
+      return res.status(400).json({ success: false, message: "Amount and Booking ID are required" });
+    }
+
+    console.log("Creating order with:", { amount, bookingId });
+
+    // Create order in Razorpay
     const options = {
-      amount: amount * 100, // Razorpay accepts paise
+      amount: amount * 100, // Convert to paise
       currency: "INR",
       receipt: `order_rcptid_${bookingId}`,
       payment_capture: 1,
     };
 
     const order = await razorpay.orders.create(options);
+    console.log("Order created:", order);
 
-    // Save order details in DB
+    // Save to DB
     const payment = new Payment({
       userId: req.user.id,
       bookingId,
@@ -32,13 +39,15 @@ exports.createOrder = async (req, res) => {
     });
 
     await payment.save();
+    console.log("Payment saved in DB");
 
     res.json({ success: true, order });
   } catch (error) {
     console.error("Error creating order:", error);
-    res.status(500).json({ success: false, message: "Order creation failed" });
+    res.status(500).json({ success: false, message: "Error creating payment order", error });
   }
 };
+
 
 // ✅ Verify Razorpay Payment
 exports.verifyPayment = async (req, res) => {
