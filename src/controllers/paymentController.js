@@ -78,7 +78,7 @@ exports.verifyPayment = async (req, res) => {
     await payment.save();
 
     // Update booking status to confirmed
-    await Booking.findByIdAndUpdate(bookingId, { status: "Confirmed" });
+    await Booking.findByIdAndUpdate(bookingId, { paymentStatus: "Paid" });
 
     res.json({ success: true, message: "Payment verified successfully" });
   } catch (error) {
