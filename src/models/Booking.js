@@ -13,3 +13,14 @@ const bookingSchema = new mongoose.Schema(
 );
 
 module.exports = mongoose.model("Booking", bookingSchema);
+
+
+// paymentStatus: {
+//   type: String,
+//   enum: ["Pending", "Paid", "Failed"],
+//   default: "Pending",
+// },
+// scheduleDate: {
+//   type: Date, // Scheduled class date
+//   required: true,
+// },
