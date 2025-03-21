@@ -5,7 +5,7 @@ const { protectCustomer, protectTrainer } = require("../middleware/authMiddlewar
 const router = express.Router();
 
 router.post("/", protectCustomer, createReview); // Submit Review
-// router.get("/", protectCustomer, getReviews);
+router.get("/", protectCustomer, getReviews);
 router.get("/:trainerId",protectTrainer, getTrainerReviews); // Fetch Reviews for a Trainer
 router.put("/:reviewId/response", protectTrainer, respondToReview); // Trainer responds
 
