@@ -48,12 +48,14 @@ exports.createReview = async (req, res) => {
   }
 };
 
-
 // ✅ Fetch Reviews for a Trainer
 exports.getTrainerReviews = async (req, res) => {
   try {
     const { trainerId } = req.params;
-    const reviews = await Review.find({ trainer: trainerId }).populate("user", "userName");
+    const reviews = await Review.find({ trainer: trainerId }).populate({
+      path: "reviews.user",
+      select: "userName email avatar", // Only fetch necessary fields
+    });
     res.json(reviews);
   } catch (error) {
     res.status(500).json({ message: "Server error", error });
