@@ -31,7 +31,7 @@ const reviewRoutes = require("./src/routes/reviewRoute");
 const recommendationRoutes = require("./src/routes/recommendationRoute");
 const dashboardRoutes = require("./src/routes/DashboardRoutes");
 
-// const paymentRoutes = require("./src/routes/paymentRoute");
+const paymentRoutes = require("./src/routes/paymentRoute");
 
 // // Use Routes
 app.use("/api/user-auth", authUserRoutes);
@@ -42,10 +42,10 @@ app.use("/api/classes", classRoutes);
 app.use("/api/bookings", bookingRoutes);
 app.use("/api/reviews", reviewRoutes);
 app.use("/api/recommendations", recommendationRoutes);
+app.use("/api/payment", paymentRoutes);
 
 // Use routes
 app.use("/api", dashboardRoutes);
-// app.use("/api/payments", paymentRoutes);
 
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
