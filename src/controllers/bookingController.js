@@ -50,7 +50,6 @@ exports.createBooking = async (req, res) => {
       trainer: trainerId,
       category,
       price,
-       date,
       status: "Booked",
     });
 
@@ -109,28 +108,18 @@ exports.getBookings = async (req, res) => {
 exports.cancelBooking = async (req, res) => {
   try {
     const { id } = req.params;
-    console.log("Cancelling booking with ID:", id); // ✅ Log Booking ID
     let booking = await Booking.findById(id).populate("classId trainer user");
 
     if (!booking) {
-      console.log("❌ Booking not found");
       return res.status(404).json({ message: "Booking not found" });
     }
 
     if (booking.user._id.toString() !== req.user.id) {
-      console.log("❌ Unauthorized booking cancellation attempt by user:", req.user.id);
       return res.status(403).json({ message: "Not authorized to cancel this booking" });
     }
 
     booking.status = "Cancelled";
     await booking.save();
-    console.log("✅ Booking cancelled successfully in DB");
-
-    // ✅ Check if user email exists before sending
-    if (!booking.user.email) {
-      console.log("❌ User email not found, skipping email sending.");
-      return res.json({ message: "Booking cancelled successfully, but no email was sent." });
-    }
 
     // ✅ Send cancellation email
     const mailOptions = {
@@ -149,15 +138,15 @@ exports.cancelBooking = async (req, res) => {
 
     transporter.sendMail(mailOptions, (error, info) => {
       if (error) {
-        console.log("❌ Email error:", error);
+        console.log("Email error:", error);
       } else {
-        console.log("📧 Cancellation email sent:", info.response);
+        console.log("Cancellation email sent:", info.response);
       }
     });
 
     res.json({ message: "Booking cancelled successfully. Email sent.", booking });
   } catch (error) {
-    console.error("🔥 Error cancelling booking:", error);
-    res.status(500).json({ message: "Server error", error: error.message });
+    console.error("Error cancelling booking:", error);
+    res.status(500).json({ message: "Server error" });
   }
 };
