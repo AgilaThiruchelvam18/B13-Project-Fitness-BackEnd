@@ -8,70 +8,55 @@ const razorpay = new Razorpay({
 });
 
 // ✅ Create an Order
-exports.createOrder = async (req, res) => {
-  try {
-    console.log("📩 Received Payment Request:", req.body);
+try {
+  console.log("🔹 Received Payment Request:", req.body); // Debugging Log
 
-    const { amount, bookingId, userId } = req.body;
+  const { amount, bookingId, userId } = req.body;
 
-    if (!amount || !bookingId || !userId) {
-      console.error("❌ Missing Fields:", { amount, bookingId, userId });
+  if (!amount || !bookingId || !userId) {
+      console.error("❌ Missing required fields:", { amount, bookingId, userId });
       return res.status(400).json({ success: false, message: "Amount, Booking ID, and User ID are required" });
-    }
+  }
 
-    const options = {
-      amount: amount * 100, // Convert to paise
+  const options = {
+      amount: amount * 100, // Convert amount to paise (Razorpay requires it)
       currency: "INR",
       receipt: bookingId,
-    };
+  };
 
-    console.log("🛠️ Creating Razorpay Order with:", options);
+  console.log("🟢 Creating Razorpay Order with options:", options); // Debugging Log
 
-    // 🔹 CREATE ORDER (Catch errors from Razorpay)
-    let order;
-    try {
-      order = await razorpay.orders.create(options);
-      console.log("✅ Razorpay Order Created:", order);
-    } catch (razorpayError) {
-      console.error("❌ Razorpay Error:", razorpayError);
-      return res.status(500).json({
-        success: false,
-        message: "Error creating Razorpay order",
-        error: razorpayError.message || razorpayError,
-      });
-    }
+  // 🟢 Create order with Razorpay
+  const order = await razorpay.orders.create(options);
 
-    // 🔹 SAVE TO DATABASE (Catch errors from Mongoose)
-    try {
-      const newPayment = new Payment({
-        userId,
-        bookingId,
-        razorpayOrderId: order.id,
-        amount,
-        status: "Pending",
-      });
-
-      await newPayment.save();
-      console.log("✅ Payment Saved to Database:", newPayment);
-    } catch (dbError) {
-      console.error("❌ Database Error:", dbError);
-      return res.status(500).json({
-        success: false,
-        message: "Error saving payment data",
-        error: dbError.message || dbError,
-      });
-    }
-
-    res.json({ success: true, order });
-  } catch (error) {
-    console.error("❌ Unknown Server Error:", error);
-    res.status(500).json({
-      success: false,
-      message: "Error creating payment order",
-      error: error.message || error,
-    });
+  if (!order || !order.id) {
+      console.error("❌ Razorpay Order Creation Failed, Order Response:", order);
+      return res.status(500).json({ success: false, message: "Failed to create order with Razorpay" });
   }
-};
+
+  console.log("✅ Razorpay Order Created Successfully:", order); // Debugging Log
+
+  // 🟢 Save payment in DB with "Pending" status
+  const newPayment = new Payment({
+      userId,
+      bookingId,
+      razorpayOrderId: order.id,
+      amount,
+      status: "Pending",
+  });
+
+  console.log("🟢 Saving Payment to DB:", newPayment); // Debugging Log
+
+  await newPayment.save();
+
+  console.log("✅ Payment Successfully Saved in DB"); // Debugging Log
+
+  res.json({ success: true, order });
+} catch (error) {
+  console.error("❌ Error creating order:", error);
+  res.status(500).json({ success: false, message: "Internal Server Error", error: error.message });
+}
+
 
 
 // ✅ Verify Razorpay Payment
