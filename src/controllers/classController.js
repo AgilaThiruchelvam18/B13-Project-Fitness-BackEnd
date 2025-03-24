@@ -141,7 +141,7 @@ exports.getClassById = async (req, res) => {
 // @access  Trainer only
 exports.updateClass = async (req, res) => {
   try {
-    const { scheduleType, date, recurringTimeSlots } = req.body;
+    const { scheduleType, recurringTimeSlots } = req.body;
     const classId = req.params.id;
 
     const existingClass = await Class.findById(classId);
@@ -161,7 +161,7 @@ exports.updateClass = async (req, res) => {
     existingClass.scheduleType = scheduleType;
 
     if (scheduleType === "One-time") {
-      existingClass.date = date;
+      // existingClass.date = date;
       existingClass.recurringTimeSlots = [];
     } else {
       existingClass.date = null;
