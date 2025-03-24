@@ -141,8 +141,7 @@ exports.getClassById = async (req, res) => {
 // @access  Trainer only
 exports.updateClass = async (req, res) => {
   const { classId } = req.params;
-  const { newDate, newTimeSlot, recurringTimeSlots, updatedSlot } = req.body; 
-
+  const { newDate, newTimeSlot, recurringTimeSlots, updatedSlot } = req.body;
   console.log("🔹 Received Update Payload:", req.body);
 
   try {
@@ -154,9 +153,14 @@ exports.updateClass = async (req, res) => {
         return res.status(400).json({ message: "Recurrent schedule must include valid time slots." });
       }
 
+      const validTimeSlots = recurringTimeSlots.filter(slot => slot.day && slot.startTime && slot.endTime);
+      if (validTimeSlots.length !== recurringTimeSlots.length) {
+        return res.status(400).json({ message: "Each recurring time slot must have day, startTime, and endTime." });
+      }
+
       if (updatedSlot) {
         const slotIndex = fitnessClass.schedule.timeSlots.findIndex(
-          (slot) => slot._id.toString() === updatedSlot._id.toString()
+          slot => slot._id.toString() === updatedSlot._id.toString()
         );
 
         if (slotIndex !== -1) {
@@ -166,9 +170,7 @@ exports.updateClass = async (req, res) => {
           return res.status(404).json({ message: "Time slot not found for update." });
         }
       } else {
-        // If no specific slot to update, replace all slots
-        fitnessClass.schedule.timeSlots = recurringTimeSlots.map(slot => ({
-          date: new Date(slot.date),
+        fitnessClass.schedule.timeSlots = validTimeSlots.map(slot => ({
           day: slot.day,
           startTime: slot.startTime,
           endTime: slot.endTime,
@@ -178,12 +180,13 @@ exports.updateClass = async (req, res) => {
 
     await fitnessClass.save();
     res.status(200).json({ message: "Class updated successfully!", updatedClass: fitnessClass });
-
   } catch (error) {
-    console.error("❌ Error updating class:", error);
+    console.error("Error updating class:", error);
     res.status(500).json({ message: "Internal Server Error", error: error.message });
   }
 };
+
+
 
 
 
