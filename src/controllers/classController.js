@@ -139,79 +139,41 @@ exports.getClassById = async (req, res) => {
 // @desc    Update class details
 // @route   PUT /api/classes/:id
 // @access  Trainer only
-exports.updateClass = async (req, res) => {
-  const { classId } = req.params;
-  const { newDate, newTimeSlot, recurringTimeSlots, updatedSlot } = req.body;
-  console.log("🔹 Received Update Payload:", req.body);
-
+const rescheduleClass = async (req, res) => {
   try {
-    const fitnessClass = await Class.findById(classId);
-    if (!fitnessClass) return res.status(404).json({ message: "Class not found" });
+    const { scheduleType, date, recurringTimeSlots } = req.body;
+    const classId = req.params.id;
 
-    if (
-      fitnessClass.schedule.scheduleType === "Recurrent" &&
-      (!updatedSlot || Object.keys(updatedSlot).length === 0) &&
-      (!Array.isArray(recurringTimeSlots) || recurringTimeSlots.length === 0)
-    ) {
-      return res.status(400).json({ message: "No valid recurring time slots provided." });
+    const existingClass = await Class.findById(classId);
+    if (!existingClass) {
+      return res.status(404).json({ message: "Class not found." });
     }
 
-    if (!newDate && !fitnessClass.schedule.oneTimeDate) {
+    // ✅ Ensure correct validation for One-time and Recurrent classes
+    if (scheduleType === "One-time") {
       return res.status(400).json({ message: "One-time class requires a valid date." });
+    } 
+    else if (scheduleType === "Recurrent" && (!recurringTimeSlots || recurringTimeSlots.length === 0)) {
+      return res.status(400).json({ message: "Recurrent class requires valid time slots." });
     }
 
-    // 🔹 Handle One-time class update
-    if (fitnessClass.schedule.scheduleType === "One-time") {
-      const startTime = newTimeSlot?.startTime || req.body.oneTimeStartTime;
-      const endTime = newTimeSlot?.endTime || req.body.oneTimeEndTime;
+    // ✅ Update class details based on schedule type
+    existingClass.scheduleType = scheduleType;
 
-      if (!startTime || !endTime) {
-        return res.status(400).json({ message: "One-time class requires valid start and end times." });
-      }
-
-      fitnessClass.schedule.oneTimeDate = newDate || fitnessClass.schedule.oneTimeDate;
-      fitnessClass.schedule.oneTimeStartTime = startTime;
-      fitnessClass.schedule.oneTimeEndTime = endTime;
+    if (scheduleType === "One-time") {
+      existingClass.date = date;
+      existingClass.recurringTimeSlots = [];
     } else {
-      // 🔹 Handle Recurrent class update
-      if (updatedSlot) {
-        const slotIndex = fitnessClass.schedule.timeSlots.findIndex(
-          slot => slot._id.toString() === updatedSlot._id
-        );
-
-        if (slotIndex !== -1) {
-          fitnessClass.schedule.timeSlots[slotIndex].startTime = updatedSlot.startTime;
-          fitnessClass.schedule.timeSlots[slotIndex].endTime = updatedSlot.endTime;
-        } else {
-          return res.status(404).json({ message: "Time slot not found for update." });
-        }
-      } else {
-        // 🔹 Validate time slots
-        const validTimeSlots = (recurringTimeSlots || []).filter(
-          slot => slot?.date && slot?.day && slot?.startTime && slot?.endTime
-        );
-
-        if (validTimeSlots.length === 0) {
-          return res.status(400).json({ message: "No valid recurring time slots provided." });
-        }
-
-        fitnessClass.schedule.timeSlots = validTimeSlots.map(slot => ({
-          date: slot.date instanceof Date ? slot.date : new Date(slot.date),
-          day: slot.day,
-          startTime: slot.startTime,
-          endTime: slot.endTime,
-        }));
-      }
+      existingClass.date = null;
+      existingClass.recurringTimeSlots = recurringTimeSlots;
     }
 
-    console.log("✅ Updated timeSlots before saving:", JSON.stringify(fitnessClass.schedule.timeSlots, null, 2));
+    await existingClass.save();
+    return res.status(200).json({ message: "Class rescheduled successfully.", class: existingClass });
 
-    await fitnessClass.save();
-
-    res.status(200).json({ message: "Class updated successfully!", updatedClass: fitnessClass });
   } catch (error) {
-    console.error("❌ Error updating class:", error);
-    res.status(500).json({ message: "Internal Server Error", error: error.message });
+    console.error("Error rescheduling class:", error);
+    return res.status(500).json({ message: "Server error. Please try again." });
   }
 };
 
