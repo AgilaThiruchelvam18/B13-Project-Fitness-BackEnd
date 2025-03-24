@@ -139,43 +139,43 @@ exports.getClassById = async (req, res) => {
 // @desc    Update class details
 // @route   PUT /api/classes/:id
 // @access  Trainer only
-const rescheduleClass = async (req, res) => {
-  try {
-    const { scheduleType, date, recurringTimeSlots } = req.body;
-    const classId = req.params.id;
+// exports.rescheduleClass = async (req, res) => {
+//   try {
+//     const { scheduleType, date, recurringTimeSlots } = req.body;
+//     const classId = req.params.id;
 
-    const existingClass = await Class.findById(classId);
-    if (!existingClass) {
-      return res.status(404).json({ message: "Class not found." });
-    }
+//     const existingClass = await Class.findById(classId);
+//     if (!existingClass) {
+//       return res.status(404).json({ message: "Class not found." });
+//     }
 
-    // ✅ Ensure correct validation for One-time and Recurrent classes
-    if (scheduleType === "One-time") {
-      return res.status(400).json({ message: "One-time class requires a valid date." });
-    } 
-    else if (scheduleType === "Recurrent" && (!recurringTimeSlots || recurringTimeSlots.length === 0)) {
-      return res.status(400).json({ message: "Recurrent class requires valid time slots." });
-    }
+//     // ✅ Ensure correct validation for One-time and Recurrent classes
+//     if (scheduleType === "One-time") {
+//       return res.status(400).json({ message: "One-time class requires a valid date." });
+//     } 
+//     else if (scheduleType === "Recurrent" && (!recurringTimeSlots || recurringTimeSlots.length === 0)) {
+//       return res.status(400).json({ message: "Recurrent class requires valid time slots." });
+//     }
 
-    // ✅ Update class details based on schedule type
-    existingClass.scheduleType = scheduleType;
+//     // ✅ Update class details based on schedule type
+//     existingClass.scheduleType = scheduleType;
 
-    if (scheduleType === "One-time") {
-      existingClass.date = date;
-      existingClass.recurringTimeSlots = [];
-    } else {
-      existingClass.date = null;
-      existingClass.recurringTimeSlots = recurringTimeSlots;
-    }
+//     if (scheduleType === "One-time") {
+//       existingClass.date = date;
+//       existingClass.recurringTimeSlots = [];
+//     } else {
+//       existingClass.date = null;
+//       existingClass.recurringTimeSlots = recurringTimeSlots;
+//     }
 
-    await existingClass.save();
-    return res.status(200).json({ message: "Class rescheduled successfully.", class: existingClass });
+//     await existingClass.save();
+//     return res.status(200).json({ message: "Class rescheduled successfully.", class: existingClass });
 
-  } catch (error) {
-    console.error("Error rescheduling class:", error);
-    return res.status(500).json({ message: "Server error. Please try again." });
-  }
-};
+//   } catch (error) {
+//     console.error("Error rescheduling class:", error);
+//     return res.status(500).json({ message: "Server error. Please try again." });
+//   }
+// };
 
 
 
