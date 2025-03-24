@@ -17,6 +17,8 @@ const classSchema = new mongoose.Schema(
       oneTimeDate: { type: Date },
       oneTimeStartTime: { type: String },
       oneTimeEndTime: { type: String },
+      startDate: { type: Date },
+      endDate: { type: Date },
       enabledDays: [{ type: String }],
       timeSlots: [
         {
@@ -30,8 +32,7 @@ const classSchema = new mongoose.Schema(
           endTime: { type: String, required: true },
         },
       ],
-      startDate: { type: Date },
-      endDate: { type: Date },
+
     },
     trainer: { type: mongoose.Schema.Types.ObjectId, ref: "Trainer", required: true },
   },
