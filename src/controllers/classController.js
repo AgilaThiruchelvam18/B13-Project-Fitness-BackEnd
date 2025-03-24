@@ -45,11 +45,11 @@ exports.createClass = async (req, res) => {
       // 🔹 Loop over enabledDays to create time slots
       schedule.enabledDays.forEach((day) => {
         // Get the day of the week (0: Sunday, 1: Monday, ..., 6: Saturday)
-        const targetDay = daysOfWeek.indexOf(day); // assuming daysOfWeek is defined somewhere
-
+        const targetDay = daysOfWeek.indexOf(day); // Assuming daysOfWeek is defined somewhere
         let currentDate = new Date(startDate);
 
         // Find the first occurrence of the target day within the start date range
+        // Move currentDate to the first occurrence of the target day
         while (currentDate.getDay() !== targetDay) {
           currentDate.setDate(currentDate.getDate() + 1);
         }
@@ -61,6 +61,7 @@ exports.createClass = async (req, res) => {
               return res.status(400).json({ message: "Each time slot must have a start time and end time." });
             }
 
+            // Push time slot with the calculated date for the current iteration
             formattedTimeSlots.push({
               date: new Date(currentDate), // Assign the correct date
               day: day, // Assuming 'day' is already a string (Monday, Tuesday, etc.)
@@ -118,6 +119,7 @@ exports.createClass = async (req, res) => {
     res.status(500).json({ message: "Server Error", error: error.message });
   }
 };
+
 
 
 
