@@ -140,43 +140,80 @@ exports.getClassById = async (req, res) => {
 // @route   PUT /api/classes/:id
 // @access  Trainer only
 exports.updateClass = async (req, res) => {
+  const { classId } = req.params;
+  const { newDate, newTimeSlot, recurringTimeSlots, updatedSlot } = req.body; // `updatedSlot` indicates which slot to update
+  console.log("🔹 Received Update Payload:", req.body);
+
   try {
-    const { scheduleType, recurringTimeSlots } = req.body;
-    const classId = req.params.id;
+    const fitnessClass = await Class.findById(classId);
+    if (!fitnessClass) return res.status(404).json({ message: "Class not found" });
 
-    const existingClass = await Class.findById(classId);
-    if (!existingClass) {
-      return res.status(404).json({ message: "Class not found." });
+    // 🔹 Prevent empty time slots update
+    if (fitnessClass.schedule.scheduleType === "Recurrent" && (!recurringTimeSlots || recurringTimeSlots.length === 0)) {
+      return res.status(400).json({ message: "Recurring time slots cannot be empty." });
     }
-
-    // ✅ Ensure correct validation for One-time and Recurrent classes
-    if (scheduleType === "One-time") {
+    if (!newDate && !fitnessClass.schedule.oneTimeDate) {
       return res.status(400).json({ message: "One-time class requires a valid date." });
-    } 
-    else if (scheduleType === "Recurrent" && (!recurringTimeSlots || recurringTimeSlots.length === 0)) {
-      return res.status(400).json({ message: "Recurrent class requires valid time slots." });
+    }
+    // 🔹 Handle One-time class update
+    if (fitnessClass.schedule.scheduleType === "One-time") {
+      const startTime = newTimeSlot?.startTime || req.body.oneTimeStartTime;
+      const endTime = newTimeSlot?.endTime || req.body.oneTimeEndTime;
+    
+      if (!startTime || !endTime) {
+        return res.status(400).json({ message: "One-time class requires valid start and end times." });
+      }
+    
+      fitnessClass.schedule.oneTimeDate = newDate || fitnessClass.schedule.oneTimeDate;
+      fitnessClass.schedule.oneTimeStartTime = startTime;
+      fitnessClass.schedule.oneTimeEndTime = endTime;
+    }
+     else {
+      // 🔹 Handle Recurrent class update
+      if (!Array.isArray(recurringTimeSlots) || recurringTimeSlots.length === 0) {
+        return res.status(400).json({ message: "Recurrent schedule must include valid time slots." });
+      }
+
+      // 🔹 Validate each recurring time slot
+      const validTimeSlots = recurringTimeSlots.filter(slot => slot.date &&slot.day && slot.startTime && slot.endTime);
+      if (validTimeSlots.length !== recurringTimeSlots.length) {
+        return res.status(400).json({ message: "Each recurring time slot must have a date, startTime, and endTime." });
+      }
+
+      // 🔹 Update a particular slot (if `updatedSlot` is provided)
+      // Update a specific time slot if 'updatedSlot' is provided
+if (updatedSlot) {
+  const slotIndex = fitnessClass.schedule.timeSlots.findIndex(
+      slot => slot._id.toString() === updatedSlot._id
+  );
+
+  if (slotIndex !== -1) {
+      // Update only the selected slot
+      fitnessClass.schedule.timeSlots[slotIndex].startTime = updatedSlot.startTime;
+      fitnessClass.schedule.timeSlots[slotIndex].endTime = updatedSlot.endTime;
+  } else {
+      return res.status(404).json({ message: "Time slot not found for update." });
+  }
+} else {
+  // If no specific slot to update, replace all slots
+  fitnessClass.schedule.timeSlots = validTimeSlots.map(slot => ({
+      date: new Date(slot.date),
+      day: slot.day,
+      startTime: slot.startTime,
+      endTime: slot.endTime,
+  }));
+}
+
     }
 
-    // ✅ Update class details based on schedule type
-    existingClass.schedule.scheduleType = scheduleType;
+    await fitnessClass.save();
 
-    if (scheduleType === "One-time") {
-      // existingClass.date = date;
-      existingClass.recurringTimeSlots = [];
-    } else {
-      existingClass.date = null;
-      existingClass.recurringTimeSlots = recurringTimeSlots;
-    }
-
-    await existingClass.save();
-    return res.status(200).json({ message: "Class rescheduled successfully.", class: existingClass });
-
+    res.status(200).json({ message: "Class updated successfully!", updatedClass: fitnessClass });
   } catch (error) {
-    console.error("Error rescheduling class:", error);
-    return res.status(500).json({ message: "Server error. Please try again." });
+    console.error("Error updating class:", error);
+    res.status(500).json({ message: "Internal Server Error", error: error.message });
   }
 };
-
 
 
 
@@ -195,46 +232,46 @@ exports.deleteClass = async (req, res) => {
 // @desc    Get all scheduled classes sorted by date
 // @route   GET /api/classes/schedule
 // @access  Public or Trainer only (modify as needed)
-// exports.getScheduledClasses = async (req, res) => {
-//   try {
-//     const classes = await Class.find()
-//       .populate({
-//         path: "trainer",
-//         select: "name email",
-//         options: { strictPopulate: false }
-//       })
-//       .lean();
+exports.getScheduledClasses = async (req, res) => {
+  try {
+    const classes = await Class.find()
+      .populate({
+        path: "trainer",
+        select: "name email",
+        options: { strictPopulate: false }
+      })
+      .lean();
 
-//     // Sorting and structuring classes by date
-//     const sortedEvents = {};
+    // Sorting and structuring classes by date
+    const sortedEvents = {};
 
-//     classes.forEach((cls) => {
-//       if (cls.schedule.scheduleType === "One-time") {
-//         const dateKey = new Date(cls.schedule.oneTimeDate).toISOString().split("T")[0];
-//         if (!sortedEvents[dateKey]) sortedEvents[dateKey] = [];
-//         sortedEvents[dateKey].push(cls);
-//       } else if (cls.schedule.scheduleType === "Recurrent") {
-//         let currentDate = new Date(cls.schedule.startDate);
-//         const endDate = new Date(cls.schedule.endDate);
-//         while (currentDate <= endDate) {
-//           const dayOfWeek = currentDate.toLocaleDateString("en-US", { weekday: "long" });
-//           if (cls.schedule.enabledDays.includes(dayOfWeek)) {
-//             const dateKey = currentDate.toISOString().split("T")[0];
-//             if (!sortedEvents[dateKey]) sortedEvents[dateKey] = [];
-//             sortedEvents[dateKey].push(cls);
-//           }
-//           currentDate.setDate(currentDate.getDate() + 1);
-//         }
-//       }
-//     });
+    classes.forEach((cls) => {
+      if (cls.schedule.scheduleType === "One-time") {
+        const dateKey = new Date(cls.schedule.oneTimeDate).toISOString().split("T")[0];
+        if (!sortedEvents[dateKey]) sortedEvents[dateKey] = [];
+        sortedEvents[dateKey].push(cls);
+      } else if (cls.schedule.scheduleType === "Recurrent") {
+        let currentDate = new Date(cls.schedule.startDate);
+        const endDate = new Date(cls.schedule.endDate);
+        while (currentDate <= endDate) {
+          const dayOfWeek = currentDate.toLocaleDateString("en-US", { weekday: "long" });
+          if (cls.schedule.enabledDays.includes(dayOfWeek)) {
+            const dateKey = currentDate.toISOString().split("T")[0];
+            if (!sortedEvents[dateKey]) sortedEvents[dateKey] = [];
+            sortedEvents[dateKey].push(cls);
+          }
+          currentDate.setDate(currentDate.getDate() + 1);
+        }
+      }
+    });
 
-//     // Convert sorted object to an array for easier frontend handling
-//     const sortedArray = Object.entries(sortedEvents)
-//       .sort(([dateA], [dateB]) => new Date(dateA) - new Date(dateB))
-//       .map(([date, events]) => ({ date, events }));
+    // Convert sorted object to an array for easier frontend handling
+    const sortedArray = Object.entries(sortedEvents)
+      .sort(([dateA], [dateB]) => new Date(dateA) - new Date(dateB))
+      .map(([date, events]) => ({ date, events }));
 
-//     res.status(200).json(sortedArray);
-//   } catch (error) {
-//     res.status(500).json({ message: "Server Error", error: error.message });
-//   }
-// };
+    res.status(200).json(sortedArray);
+  } catch (error) {
+    res.status(500).json({ message: "Server Error", error: error.message });
+  }
+};
