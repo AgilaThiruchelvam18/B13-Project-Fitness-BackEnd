@@ -158,7 +158,7 @@ exports.updateClass = async (req, res) => {
     }
 
     // ✅ Update class details based on schedule type
-    existingClass.scheduleType = scheduleType;
+    existingClass.schedule.scheduleType = scheduleType;
 
     if (scheduleType === "One-time") {
       // existingClass.date = date;
