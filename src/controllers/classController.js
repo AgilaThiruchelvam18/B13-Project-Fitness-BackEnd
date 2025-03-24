@@ -148,9 +148,12 @@ exports.updateClass = async (req, res) => {
     const fitnessClass = await Class.findById(classId);
     if (!fitnessClass) return res.status(404).json({ message: "Class not found" });
 
-    // 🔹 Allow updating a specific slot without requiring recurringTimeSlots
-    if (fitnessClass.schedule.scheduleType === "Recurrent" && !updatedSlot && (!recurringTimeSlots || recurringTimeSlots.length === 0)) {
-      return res.status(400).json({ message: "Recurring time slots cannot be empty." });
+    if (
+      fitnessClass.schedule.scheduleType === "Recurrent" &&
+      (!updatedSlot || Object.keys(updatedSlot).length === 0) &&
+      (!Array.isArray(recurringTimeSlots) || recurringTimeSlots.length === 0)
+    ) {
+      return res.status(400).json({ message: "No valid recurring time slots provided." });
     }
 
     if (!newDate && !fitnessClass.schedule.oneTimeDate) {
@@ -177,25 +180,23 @@ exports.updateClass = async (req, res) => {
         );
 
         if (slotIndex !== -1) {
-          // Update only the selected slot
           fitnessClass.schedule.timeSlots[slotIndex].startTime = updatedSlot.startTime;
           fitnessClass.schedule.timeSlots[slotIndex].endTime = updatedSlot.endTime;
         } else {
           return res.status(404).json({ message: "Time slot not found for update." });
         }
       } else {
-        // 🔹 If updating the entire schedule, validate time slots
-        if (!Array.isArray(recurringTimeSlots) || recurringTimeSlots.length === 0) {
-          return res.status(400).json({ message: "Recurrent schedule must include valid time slots." });
-        }
+        // 🔹 Validate time slots
+        const validTimeSlots = (recurringTimeSlots || []).filter(
+          slot => slot?.date && slot?.day && slot?.startTime && slot?.endTime
+        );
 
-        const validTimeSlots = recurringTimeSlots.filter(slot => slot.date && slot.day && slot.startTime && slot.endTime);
-        if (validTimeSlots.length !== recurringTimeSlots.length) {
-          return res.status(400).json({ message: "Each recurring time slot must have a date, startTime, and endTime." });
+        if (validTimeSlots.length === 0) {
+          return res.status(400).json({ message: "No valid recurring time slots provided." });
         }
 
         fitnessClass.schedule.timeSlots = validTimeSlots.map(slot => ({
-          date: new Date(slot.date),
+          date: slot.date instanceof Date ? slot.date : new Date(slot.date),
           day: slot.day,
           startTime: slot.startTime,
           endTime: slot.endTime,
@@ -203,11 +204,13 @@ exports.updateClass = async (req, res) => {
       }
     }
 
+    console.log("✅ Updated timeSlots before saving:", JSON.stringify(fitnessClass.schedule.timeSlots, null, 2));
+
     await fitnessClass.save();
 
     res.status(200).json({ message: "Class updated successfully!", updatedClass: fitnessClass });
   } catch (error) {
-    console.error("Error updating class:", error);
+    console.error("❌ Error updating class:", error);
     res.status(500).json({ message: "Internal Server Error", error: error.message });
   }
 };
