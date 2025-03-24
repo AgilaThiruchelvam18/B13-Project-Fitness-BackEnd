@@ -139,43 +139,43 @@ exports.getClassById = async (req, res) => {
 // @desc    Update class details
 // @route   PUT /api/classes/:id
 // @access  Trainer only
-// exports.rescheduleClass = async (req, res) => {
-//   try {
-//     const { scheduleType, date, recurringTimeSlots } = req.body;
-//     const classId = req.params.id;
+exports.updateClass = async (req, res) => {
+  try {
+    const { scheduleType, date, recurringTimeSlots } = req.body;
+    const classId = req.params.id;
 
-//     const existingClass = await Class.findById(classId);
-//     if (!existingClass) {
-//       return res.status(404).json({ message: "Class not found." });
-//     }
+    const existingClass = await Class.findById(classId);
+    if (!existingClass) {
+      return res.status(404).json({ message: "Class not found." });
+    }
 
-//     // ✅ Ensure correct validation for One-time and Recurrent classes
-//     if (scheduleType === "One-time") {
-//       return res.status(400).json({ message: "One-time class requires a valid date." });
-//     } 
-//     else if (scheduleType === "Recurrent" && (!recurringTimeSlots || recurringTimeSlots.length === 0)) {
-//       return res.status(400).json({ message: "Recurrent class requires valid time slots." });
-//     }
+    // ✅ Ensure correct validation for One-time and Recurrent classes
+    if (scheduleType === "One-time") {
+      return res.status(400).json({ message: "One-time class requires a valid date." });
+    } 
+    else if (scheduleType === "Recurrent" && (!recurringTimeSlots || recurringTimeSlots.length === 0)) {
+      return res.status(400).json({ message: "Recurrent class requires valid time slots." });
+    }
 
-//     // ✅ Update class details based on schedule type
-//     existingClass.scheduleType = scheduleType;
+    // ✅ Update class details based on schedule type
+    existingClass.scheduleType = scheduleType;
 
-//     if (scheduleType === "One-time") {
-//       existingClass.date = date;
-//       existingClass.recurringTimeSlots = [];
-//     } else {
-//       existingClass.date = null;
-//       existingClass.recurringTimeSlots = recurringTimeSlots;
-//     }
+    if (scheduleType === "One-time") {
+      existingClass.date = date;
+      existingClass.recurringTimeSlots = [];
+    } else {
+      existingClass.date = null;
+      existingClass.recurringTimeSlots = recurringTimeSlots;
+    }
 
-//     await existingClass.save();
-//     return res.status(200).json({ message: "Class rescheduled successfully.", class: existingClass });
+    await existingClass.save();
+    return res.status(200).json({ message: "Class rescheduled successfully.", class: existingClass });
 
-//   } catch (error) {
-//     console.error("Error rescheduling class:", error);
-//     return res.status(500).json({ message: "Server error. Please try again." });
-//   }
-// };
+  } catch (error) {
+    console.error("Error rescheduling class:", error);
+    return res.status(500).json({ message: "Server error. Please try again." });
+  }
+};
 
 
 
@@ -195,46 +195,46 @@ exports.deleteClass = async (req, res) => {
 // @desc    Get all scheduled classes sorted by date
 // @route   GET /api/classes/schedule
 // @access  Public or Trainer only (modify as needed)
-exports.getScheduledClasses = async (req, res) => {
-  try {
-    const classes = await Class.find()
-      .populate({
-        path: "trainer",
-        select: "name email",
-        options: { strictPopulate: false }
-      })
-      .lean();
+// exports.getScheduledClasses = async (req, res) => {
+//   try {
+//     const classes = await Class.find()
+//       .populate({
+//         path: "trainer",
+//         select: "name email",
+//         options: { strictPopulate: false }
+//       })
+//       .lean();
 
-    // Sorting and structuring classes by date
-    const sortedEvents = {};
+//     // Sorting and structuring classes by date
+//     const sortedEvents = {};
 
-    classes.forEach((cls) => {
-      if (cls.schedule.scheduleType === "One-time") {
-        const dateKey = new Date(cls.schedule.oneTimeDate).toISOString().split("T")[0];
-        if (!sortedEvents[dateKey]) sortedEvents[dateKey] = [];
-        sortedEvents[dateKey].push(cls);
-      } else if (cls.schedule.scheduleType === "Recurrent") {
-        let currentDate = new Date(cls.schedule.startDate);
-        const endDate = new Date(cls.schedule.endDate);
-        while (currentDate <= endDate) {
-          const dayOfWeek = currentDate.toLocaleDateString("en-US", { weekday: "long" });
-          if (cls.schedule.enabledDays.includes(dayOfWeek)) {
-            const dateKey = currentDate.toISOString().split("T")[0];
-            if (!sortedEvents[dateKey]) sortedEvents[dateKey] = [];
-            sortedEvents[dateKey].push(cls);
-          }
-          currentDate.setDate(currentDate.getDate() + 1);
-        }
-      }
-    });
+//     classes.forEach((cls) => {
+//       if (cls.schedule.scheduleType === "One-time") {
+//         const dateKey = new Date(cls.schedule.oneTimeDate).toISOString().split("T")[0];
+//         if (!sortedEvents[dateKey]) sortedEvents[dateKey] = [];
+//         sortedEvents[dateKey].push(cls);
+//       } else if (cls.schedule.scheduleType === "Recurrent") {
+//         let currentDate = new Date(cls.schedule.startDate);
+//         const endDate = new Date(cls.schedule.endDate);
+//         while (currentDate <= endDate) {
+//           const dayOfWeek = currentDate.toLocaleDateString("en-US", { weekday: "long" });
+//           if (cls.schedule.enabledDays.includes(dayOfWeek)) {
+//             const dateKey = currentDate.toISOString().split("T")[0];
+//             if (!sortedEvents[dateKey]) sortedEvents[dateKey] = [];
+//             sortedEvents[dateKey].push(cls);
+//           }
+//           currentDate.setDate(currentDate.getDate() + 1);
+//         }
+//       }
+//     });
 
-    // Convert sorted object to an array for easier frontend handling
-    const sortedArray = Object.entries(sortedEvents)
-      .sort(([dateA], [dateB]) => new Date(dateA) - new Date(dateB))
-      .map(([date, events]) => ({ date, events }));
+//     // Convert sorted object to an array for easier frontend handling
+//     const sortedArray = Object.entries(sortedEvents)
+//       .sort(([dateA], [dateB]) => new Date(dateA) - new Date(dateB))
+//       .map(([date, events]) => ({ date, events }));
 
-    res.status(200).json(sortedArray);
-  } catch (error) {
-    res.status(500).json({ message: "Server Error", error: error.message });
-  }
-};
+//     res.status(200).json(sortedArray);
+//   } catch (error) {
+//     res.status(500).json({ message: "Server Error", error: error.message });
+//   }
+// };
