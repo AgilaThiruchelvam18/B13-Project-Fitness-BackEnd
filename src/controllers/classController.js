@@ -199,12 +199,14 @@ exports.updateClass = async (req, res) => {
       // 🔹 Update a particular slot (if `updatedSlot` is provided)
       // Update a specific time slot if 'updatedSlot' is provided
       if (updatedSlot) {
+        console.log("📌 Updating Slot:", updatedSlot);
+      
         const slotIndex = fitnessClass.schedule.timeSlots.findIndex(
-          slot => slot._id.toString() === updatedSlot._id
+          slot => slot._id.toString() === updatedSlot._id.toString()
         );
       
         if (slotIndex !== -1) {
-          // 🔹 Update only the required slot
+          // Update the found slot
           fitnessClass.schedule.timeSlots[slotIndex] = {
             ...fitnessClass.schedule.timeSlots[slotIndex],
             startTime: updatedSlot.startTime,
@@ -212,9 +214,11 @@ exports.updateClass = async (req, res) => {
             date: new Date(updatedSlot.date),
           };
         } else {
+          console.log("❌ No match found for _id:", updatedSlot._id);
           return res.status(404).json({ message: "Time slot not found for update." });
         }
-      } else {
+      }
+       else {
         // ✅ Merge new slots without deleting existing ones
         validTimeSlots.forEach((newSlot) => {
           const existingSlotIndex = fitnessClass.schedule.timeSlots.findIndex(
