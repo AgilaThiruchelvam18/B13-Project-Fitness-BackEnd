@@ -270,12 +270,26 @@ exports.updateClass = async (req, res) => {
 // @access  Trainer only
 exports.deleteClass = async (req, res) => {
   try {
-    await Class.findByIdAndDelete(req.params.id);
-    res.json({ message: "Class cancelled successfully" });
+    const classToDelete = await Class.findById(req.params.classId);
+    
+    if (!classToDelete) {
+      return res.status(404).json({ message: "Class not found" });
+    }
+
+    // ✅ Remove the class from all user bookings (if applicable)
+    await Class.deleteMany({ classId: req.params.classId });
+
+    // ✅ Optional: Notify users about the cancellation (if emails are implemented)
+    // await sendCancellationEmails(classToDelete);
+
+    await Class.findByIdAndDelete(req.params.classId);
+    
+    res.json({ message: "Class canceled successfully" });
   } catch (error) {
-    res.status(500).json({ message: "Server error", error });
+    res.status(500).json({ message: "Server error", error: error.message });
   }
 };
+
 // @desc    Get all scheduled classes sorted by date
 // @route   GET /api/classes/schedule
 // @access  Public or Trainer only (modify as needed)
