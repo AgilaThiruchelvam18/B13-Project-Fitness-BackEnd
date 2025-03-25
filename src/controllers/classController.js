@@ -51,7 +51,8 @@ let timeSlotsArray = [];
 schedule.enabledDays.forEach((day) => {
   const targetDay = daysOfWeek.indexOf(day); // Assuming daysOfWeek is defined here
   let currentDate = new Date(startDate);
-
+  console.log("🔹 currentDate:", currentDate);
+  console.log("🔹 targetDay:", targetDay);
   // Find the first occurrence of the target day within the start date range
   while (currentDate.getDay() !== targetDay) {
     currentDate.setDate(currentDate.getDate() + 1);
@@ -63,7 +64,8 @@ schedule.enabledDays.forEach((day) => {
       schedule.enabledDays.forEach((day) => {
         const targetDay = daysOfWeek.indexOf(day);
         let currentDate = new Date(startDate);
-      
+      console.log("🔹 currentDate:", currentDate);
+      console.log("🔹 targetDay:", targetDay);
         // Find the first occurrence of the target day
         while (currentDate.getDay() !== targetDay) {
           currentDate.setDate(currentDate.getDate() + 1);
@@ -79,12 +81,17 @@ schedule.enabledDays.forEach((day) => {
       
             const start = new Date(`1970-01-01T${slot.startTime}:00Z`);
             const end = new Date(`1970-01-01T${slot.endTime}:00Z`);
-      
+      console.log("🔹 start:", start);
+      console.log("🔹 end:", end);
             if (start >= end) {
               console.warn(`Start time is not before end time for ${day}`);
               return res.status(400).json({ message: `Start time must be earlier than end time for ${day}.` });
             }
-      
+      console.log("🔹 startTime:", startTime);
+      console.log("🔹 endTime:", endTime);
+      console.log("🔹 day:", day);
+      console.log("🔹 currentDate:", currentDate);
+
             // Push valid time slots
             formattedTimeSlots.push({
               date: new Date(currentDate),
