@@ -48,23 +48,39 @@ exports.createClass = async (req, res) => {
           if (!slot.date || !slot.day || !slot.startTime || !slot.endTime) {
             return res.status(400).json({ message: "Each time slot must have a date, start time, and end time." });
           }
-
+        
           console.log("🔹 slot", slot);
           console.log("🔹 slot.date", slot.date);
           console.log("🔹 slot.day", slot.day);
           console.log("🔹 slot.startTime", slot.startTime);
           console.log("🔹 slot.endTime", slot.endTime);
-
-          const parsedDate = new Date(slot.date);
-          console.log("🔹 Parsed Date:", parsedDate);
-
+        
+          // Calculate the correct date for the slot based on the startDate and the enabled day
+          let startDate = new Date(schedule.startDate);
+          let targetDate = new Date(startDate);
+          
+          // Adjust the targetDate based on the 'day' in the slot
+          const dayOfWeek = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
+          const dayIndex = dayOfWeek.indexOf(slot.day); // Get the index of the day
+        
+          // Get the difference in days between the start date and the desired day of the week
+          let dayDifference = dayIndex - targetDate.getDay();
+          if (dayDifference < 0) {
+            dayDifference += 7; // If the day has passed in the current week, add 7 days
+          }
+        
+          targetDate.setDate(targetDate.getDate() + dayDifference);
+        
+          console.log("🔹 Calculated Target Date:", targetDate);
+        
           formattedTimeSlots.push({
-            date: parsedDate,
+            date: targetDate,
             day: slot.day,
             startTime: slot.startTime,
             endTime: slot.endTime,
           });
         });
+        ;
       }
 
       if (!formattedTimeSlots.length) {
