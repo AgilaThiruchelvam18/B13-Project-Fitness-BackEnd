@@ -45,18 +45,8 @@ exports.createClass = async (req, res) => {
       const startDate = new Date(schedule.startDate);
       const endDate = new Date(schedule.endDate);
 
-      // 🔹 Flatten the grouped time slots (e.g., Monday: [{}, {}], Wednesday: [{}], Friday: [{}])
+      // 🔹 Flatten the time slots into an array
       let timeSlotsArray = [];
-      Object.keys(schedule).forEach((key) => {
-        if (key !== "scheduleType" && key !== "startDate" && key !== "endDate" && key !== "enabledDays") {
-          timeSlotsArray = timeSlotsArray.concat(schedule[key].map((slot) => ({
-            ...slot,
-            day: key // Add the day key to each slot
-          })));
-        }
-      });
-
-      // 🔹 Loop over enabledDays to create time slots
       schedule.enabledDays.forEach((day) => {
         // Get the day of the week (0: Sunday, 1: Monday, ..., 6: Saturday)
         const targetDay = daysOfWeek.indexOf(day); // Assuming daysOfWeek is defined here
@@ -70,20 +60,22 @@ exports.createClass = async (req, res) => {
 
         // Generate time slots for each occurrence of the selected day
         while (currentDate <= endDate) {
-          // Loop through each time slot for the selected day and add them
-          timeSlotsArray.forEach((slot) => {
-            if (!slot.startTime || !slot.endTime) {
-              return res.status(400).json({ message: "Each time slot must have a start time and end time." });
-            }
+          // Add each time slot from the input data
+          if (schedule[day] && Array.isArray(schedule[day])) {
+            schedule[day].forEach((slot) => {
+              if (!slot.startTime || !slot.endTime) {
+                return res.status(400).json({ message: "Each time slot must have a start time and end time." });
+              }
 
-            // Push the time slot with the calculated date for the current iteration
-            formattedTimeSlots.push({
-              date: new Date(currentDate), // Assign the correct date
-              day: slot.day, // Day of the week, e.g., Monday
-              startTime: slot.startTime,
-              endTime: slot.endTime,
+              // Push the time slot with the calculated date for the current iteration
+              formattedTimeSlots.push({
+                date: new Date(currentDate), // Assign the correct date
+                day: day, // Day of the week, e.g., Monday
+                startTime: slot.startTime,
+                endTime: slot.endTime,
+              });
             });
-          });
+          }
 
           // Move to the next occurrence of the same day of the week
           currentDate.setDate(currentDate.getDate() + 7);
@@ -134,6 +126,7 @@ exports.createClass = async (req, res) => {
     res.status(500).json({ message: "Server Error", error: error.message });
   }
 };
+
 
 
 
