@@ -39,11 +39,16 @@ exports.createClass = async (req, res) => {
       }
 
       if (Array.isArray(schedule.timeSlots)) {
+        console.log("🔹 schedule.timeSlots",schedule.timeSlots);
         schedule.timeSlots.forEach((slot) => {
           if (!slot.date||!slot.day || !slot.startTime || !slot.endTime) {
             return res.status(400).json({ message: "Each time slot must have a date, start time, and end time." });
           }
-
+console.log("🔹 slot",slot);
+console.log("🔹 slot.date",slot.date);
+console.log("🔹 slot.day",slot.day);
+console.log("🔹 slot.startTime",slot.startTime);
+console.log("🔹 slot.endTime",slot.endTime);
           formattedTimeSlots.push({
             date: new Date(slot.date),
             day: slot.day, // Assuming 'day' is already a string (Monday, Tuesday, etc.)
