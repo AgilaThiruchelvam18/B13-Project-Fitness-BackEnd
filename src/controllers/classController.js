@@ -168,9 +168,9 @@ exports.updateClass = async (req, res) => {
     if (fitnessClass.schedule.scheduleType === "Recurrent" && (!recurringTimeSlots || recurringTimeSlots.length === 0)) {
       return res.status(400).json({ message: "Recurring time slots cannot be empty." });
     }
-    if (!newDate && !fitnessClass.schedule.oneTimeDate) {
-      return res.status(400).json({ message: "One-time class requires a valid date." });
-    }
+    // if (!newDate && !fitnessClass.schedule.oneTimeDate) {
+    //   return res.status(400).json({ message: "One-time class requires a valid date." });
+    // }
     // 🔹 Handle One-time class update
     if (fitnessClass.schedule.scheduleType === "One-time") {
       const startTime = newTimeSlot?.startTime || req.body.oneTimeStartTime;
