@@ -38,20 +38,29 @@ exports.createClass = async (req, res) => {
         return res.status(400).json({ message: "Recurrent schedule must have a start date, end date, and at least one selected day." });
       }
 
+      console.log("🔹 schedule.timeSlots", schedule.timeSlots);  // Log the time slots array
+
       if (Array.isArray(schedule.timeSlots)) {
-        console.log("🔹 schedule.timeSlots",schedule.timeSlots);
+        console.log("🔹 Is timeSlots an array?", Array.isArray(schedule.timeSlots));
+        console.log("🔹 timeSlots Length:", schedule.timeSlots.length);
+
         schedule.timeSlots.forEach((slot) => {
-          if (!slot.date||!slot.day || !slot.startTime || !slot.endTime) {
+          if (!slot.date || !slot.day || !slot.startTime || !slot.endTime) {
             return res.status(400).json({ message: "Each time slot must have a date, start time, and end time." });
           }
-console.log("🔹 slot",slot);
-console.log("🔹 slot.date",slot.date);
-console.log("🔹 slot.day",slot.day);
-console.log("🔹 slot.startTime",slot.startTime);
-console.log("🔹 slot.endTime",slot.endTime);
+
+          console.log("🔹 slot", slot);
+          console.log("🔹 slot.date", slot.date);
+          console.log("🔹 slot.day", slot.day);
+          console.log("🔹 slot.startTime", slot.startTime);
+          console.log("🔹 slot.endTime", slot.endTime);
+
+          const parsedDate = new Date(slot.date);
+          console.log("🔹 Parsed Date:", parsedDate);
+
           formattedTimeSlots.push({
-            date: new Date(slot.date),
-            day: slot.day, // Assuming 'day' is already a string (Monday, Tuesday, etc.)
+            date: parsedDate,
+            day: slot.day,
             startTime: slot.startTime,
             endTime: slot.endTime,
           });
@@ -101,8 +110,6 @@ console.log("🔹 slot.endTime",slot.endTime);
     res.status(500).json({ message: "Server Error", error: error.message });
   }
 };
-
-
 
 
 // @desc    Get all classes
