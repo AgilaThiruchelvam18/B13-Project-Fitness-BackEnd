@@ -171,6 +171,7 @@ exports.updateClass = async (req, res) => {
     if (!newDate && !fitnessClass.schedule.oneTimeDate) {
       return res.status(400).json({ message: "One-time class requires a valid date." });
     }
+    
     // 🔹 Handle One-time class update
     if (fitnessClass.schedule.scheduleType === "One-time") {
       const startTime = newTimeSlot?.startTime || req.body.oneTimeStartTime;
@@ -183,43 +184,42 @@ exports.updateClass = async (req, res) => {
       fitnessClass.schedule.oneTimeDate = newDate || fitnessClass.schedule.oneTimeDate;
       fitnessClass.schedule.oneTimeStartTime = startTime;
       fitnessClass.schedule.oneTimeEndTime = endTime;
-    }
-     else {
+    } 
+    else {
       // 🔹 Handle Recurrent class update
       if (!Array.isArray(recurringTimeSlots) || recurringTimeSlots.length === 0) {
         return res.status(400).json({ message: "Recurrent schedule must include valid time slots." });
       }
 
       // 🔹 Validate each recurring time slot
-      const validTimeSlots = recurringTimeSlots.filter(slot => slot.date &&slot.day && slot.startTime && slot.endTime);
+      const validTimeSlots = recurringTimeSlots.filter(slot => slot.date && slot.day && slot.startTime && slot.endTime);
       if (validTimeSlots.length !== recurringTimeSlots.length) {
         return res.status(400).json({ message: "Each recurring time slot must have a date, startTime, and endTime." });
       }
 
       // 🔹 Update a particular slot (if `updatedSlot` is provided)
-      // Update a specific time slot if 'updatedSlot' is provided
-if (updatedSlot) {
-  const slotIndex = fitnessClass.schedule.timeSlots.findIndex(
-      slot => slot._id.toString() === updatedSlot._id
-  );
+      if (updatedSlot) {
+        const slotIndex = fitnessClass.schedule.timeSlots.findIndex(
+            slot => slot._id.toString() === updatedSlot._id
+        );
 
-  if (slotIndex !== -1) {
-      // Update only the selected slot
-      fitnessClass.schedule.timeSlots[slotIndex].startTime = updatedSlot.startTime;
-      fitnessClass.schedule.timeSlots[slotIndex].endTime = updatedSlot.endTime;
-  } else {
-      return res.status(404).json({ message: "Time slot not found for update." });
-  }
-} else {
-  // If no specific slot to update, replace all slots
-  fitnessClass.schedule.timeSlots = validTimeSlots.map(slot => ({
-      date: new Date(slot.date),
-      day: slot.day,
-      startTime: slot.startTime,
-      endTime: slot.endTime,
-  }));
-}
-
+        if (slotIndex !== -1) {
+            // Update only the selected slot
+            fitnessClass.schedule.timeSlots[slotIndex].startTime = updatedSlot.startTime;
+            fitnessClass.schedule.timeSlots[slotIndex].endTime = updatedSlot.endTime;
+            fitnessClass.schedule.timeSlots[slotIndex].date = new Date(updatedSlot.date);  // Ensure date is a Date object
+        } else {
+            return res.status(404).json({ message: "Time slot not found for update." });
+        }
+      } else {
+        // If no specific slot to update, replace all slots
+        fitnessClass.schedule.timeSlots = validTimeSlots.map(slot => ({
+            date: new Date(slot.date),
+            day: slot.day,
+            startTime: slot.startTime,
+            endTime: slot.endTime,
+        }));
+      }
     }
 
     await fitnessClass.save();
