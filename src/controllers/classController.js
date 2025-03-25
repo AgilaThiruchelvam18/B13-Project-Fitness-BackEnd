@@ -37,6 +37,9 @@ exports.createClass = async (req, res) => {
 
     // 🔹 Validate Recurrent Schedule
     let formattedTimeSlots = [];
+    console.log("Schedule Data:", schedule);
+console.log("Day Specific Data for Monday:", schedule["Monday"]);
+
     if (schedule.scheduleType === "Recurrent") {
       if (!schedule.startDate || !schedule.endDate || !Array.isArray(schedule.enabledDays) || schedule.enabledDays.length === 0) {
         return res.status(400).json({ message: "Recurrent schedule must have a start date, end date, and at least one selected day." });
@@ -50,38 +53,34 @@ exports.createClass = async (req, res) => {
       schedule.enabledDays.forEach((day) => {
         const targetDay = daysOfWeek.indexOf(day); // Get index of the day in the week
         let currentDate = new Date(startDate);
-        console.log("🔹 currentDate:", currentDate);
-        console.log("🔹 targetDay:", targetDay);
-
-        // Find the first occurrence of the target day within the start date range
+        console.log("🔹 Current Date Before Looping:", currentDate);
+        console.log("🔹 Target Day:", targetDay);
+      
         while (currentDate.getDay() !== targetDay) {
           currentDate.setDate(currentDate.getDate() + 1);
         }
-
-        // Generate time slots for each occurrence of the selected day
+      
         while (currentDate <= endDate) {
-          // Check if there are valid time slots for the day
+          console.log("🔹 Checking Day:", currentDate);
           if (schedule[day] && Array.isArray(schedule[day])) {
             schedule[day].forEach((slot) => {
               if (!slot.startTime || !slot.endTime) {
                 console.warn(`Missing time slot start or end time for ${day}`);
                 return res.status(400).json({ message: `Invalid time slot for ${day}. Both start and end times are required.` });
               }
-
+      
               const start = new Date(`1970-01-01T${slot.startTime}:00Z`);
               const end = new Date(`1970-01-01T${slot.endTime}:00Z`);
-              console.log("🔹 start:", start);
-              console.log("🔹 end:", end);
-
+              console.log("🔹 Start Time:", start);
+              console.log("🔹 End Time:", end);
+      
               if (start >= end) {
                 console.warn(`Start time is not before end time for ${day}`);
                 return res.status(400).json({ message: `Start time must be earlier than end time for ${day}.` });
               }
-
-              console.log("🔹 day:", day);
-              console.log("🔹 currentDate:", currentDate);
-
-              // Push valid time slots
+      
+              console.log("🔹 Adding Time Slot for", day, ":", currentDate);
+      
               formattedTimeSlots.push({
                 date: new Date(currentDate),
                 day: day,
@@ -90,11 +89,12 @@ exports.createClass = async (req, res) => {
               });
             });
           }
-
-          // Move to the next occurrence of the same day of the week
           currentDate.setDate(currentDate.getDate() + 7);
         }
       });
+      
+      console.log("🔹 Formatted Time Slots:", formattedTimeSlots);
+      
 
       if (formattedTimeSlots.length === 0) {
         return res.status(400).json({ message: "Recurrent schedule must have at least one valid time slot." });
