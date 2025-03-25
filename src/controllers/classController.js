@@ -201,13 +201,13 @@ exports.updateClass = async (req, res) => {
       if (updatedSlot) {
         console.log("📌 Updated Slot Received:", updatedSlot);
       
-        if (!updatedSlot._id) {
+        if (!updatedSlot.id) {
           console.log("❌ Error: updatedSlot._id is missing!");
           return res.status(400).json({ message: "Invalid request: Missing updatedSlot._id" });
         }
       
         const slotIndex = fitnessClass.schedule.timeSlots.findIndex(
-          slot => slot._id.toString() === updatedSlot._id.toString()
+          slot => slot._id.toString() === updatedSlot.id.toString()
         );
       
         if (slotIndex !== -1) {
@@ -219,7 +219,7 @@ exports.updateClass = async (req, res) => {
             date: new Date(updatedSlot.date),
           };
         } else {
-          console.log("❌ No match found for _id:", updatedSlot._id);
+          console.log("❌ No match found for _id:", updatedSlot.id);
           return res.status(404).json({ message: "Time slot not found for update." });
         }
       }
