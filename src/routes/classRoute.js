@@ -15,7 +15,7 @@ const router = express.Router();
 router.post("/", protectTrainer, createClass);
 
 // Update class (Trainer only)
-router.put("/:classId/reschedule", updateClass);
+router.put("/:classId/reschedule",protectTrainer, updateClass);
 
 // Delete class (Trainer only)
 router.delete("/:classId/cancel", protectTrainer, deleteClass);
