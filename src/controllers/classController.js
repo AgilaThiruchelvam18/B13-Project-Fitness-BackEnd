@@ -17,7 +17,7 @@ const transporter = nodemailer.createTransport({
 
 exports.createClass = async (req, res) => {
   try {
-    const { title, description, category, duration, price, capacity, schedule } = req.body;
+    const { title, description, category, price, capacity, schedule } = req.body;
 
     // 🔹 Validate Schedule Type
     if (!["One-time", "Recurrent"].includes(schedule.scheduleType)) {
@@ -74,7 +74,6 @@ console.log("🔹 slot.endTime",slot.endTime);
       title,
       description,
       category,
-      duration,
       price,
       capacity,
       schedule: {
