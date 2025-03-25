@@ -202,8 +202,8 @@ exports.updateClass = async (req, res) => {
         console.log("📌 Updated Slot Received:", updatedSlot);
       
         if (!updatedSlot.id) {
-          console.log("❌ Error: updatedSlot._id is missing!");
-          return res.status(400).json({ message: "Invalid request: Missing updatedSlot._id" });
+          console.log("❌ Error: updatedSlot.id is missing!");
+          return res.status(400).json({ message: "Invalid request: Missing updatedSlot.id" });
         }
       
         const slotIndex = fitnessClass.schedule.timeSlots.findIndex(
