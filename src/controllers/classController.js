@@ -46,41 +46,46 @@ exports.createClass = async (req, res) => {
       const endDate = new Date(schedule.endDate);
 
       // 🔹 Flatten the time slots into an array
-      let timeSlotsArray = [];
-      schedule.enabledDays.forEach((day) => {
-        // Get the day of the week (0: Sunday, 1: Monday, ..., 6: Saturday)
-        const targetDay = daysOfWeek.indexOf(day); // Assuming daysOfWeek is defined here
-        let currentDate = new Date(startDate);
+      // Flatten the time slots into an array
+let timeSlotsArray = [];
+schedule.enabledDays.forEach((day) => {
+  const targetDay = daysOfWeek.indexOf(day); // Assuming daysOfWeek is defined here
+  let currentDate = new Date(startDate);
 
-        // Find the first occurrence of the target day within the start date range
-        // Move currentDate to the first occurrence of the target day
-        while (currentDate.getDay() !== targetDay) {
-          currentDate.setDate(currentDate.getDate() + 1);
+  // Find the first occurrence of the target day within the start date range
+  while (currentDate.getDay() !== targetDay) {
+    currentDate.setDate(currentDate.getDate() + 1);
+  }
+
+  // Generate time slots for each occurrence of the selected day
+  while (currentDate <= endDate) {
+    if (schedule[day] && Array.isArray(schedule[day])) {
+      schedule[day].forEach((slot, index) => {
+        if (!slot.startTime || !slot.endTime) {
+          return res.status(400).json({ message: `Invalid time slot at index ${index + 1} for ${day}. Both start and end times are required.` });
         }
 
-        // Generate time slots for each occurrence of the selected day
-        while (currentDate <= endDate) {
-          // Add each time slot from the input data
-          if (schedule[day] && Array.isArray(schedule[day])) {
-            schedule[day].forEach((slot) => {
-              if (!slot.startTime || !slot.endTime) {
-                return res.status(400).json({ message: "Each time slot must have a start time and end time." });
-              }
-
-              // Push the time slot with the calculated date for the current iteration
-              formattedTimeSlots.push({
-                date: new Date(currentDate), // Assign the correct date
-                day: day, // Day of the week, e.g., Monday
-                startTime: slot.startTime,
-                endTime: slot.endTime,
-              });
-            });
-          }
-
-          // Move to the next occurrence of the same day of the week
-          currentDate.setDate(currentDate.getDate() + 7);
+        // Check if start time is before end time
+        const start = new Date(`1970-01-01T${slot.startTime}:00Z`);
+        const end = new Date(`1970-01-01T${slot.endTime}:00Z`);
+        if (start >= end) {
+          return res.status(400).json({ message: `Start time must be earlier than end time for ${day} at index ${index + 1}.` });
         }
+
+        formattedTimeSlots.push({
+          date: new Date(currentDate), // Assign the correct date
+          day: day, // Day of the week, e.g., Monday
+          startTime: slot.startTime,
+          endTime: slot.endTime,
+        });
       });
+    }
+
+    // Move to the next occurrence of the same day of the week
+    currentDate.setDate(currentDate.getDate() + 7);
+  }
+});
+
 
       if (formattedTimeSlots.length === 0) {
         return res.status(400).json({ message: "Recurrent schedule must have at least one valid time slot." });
