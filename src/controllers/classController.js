@@ -34,6 +34,7 @@ exports.createClass = async (req, res) => {
     // 🔹 Validate Recurrent Schedule
     let formattedTimeSlots = [];
     if (schedule.scheduleType === "Recurrent") {
+      // Validate Recurrent Schedule fields
       if (!schedule.startDate || !schedule.endDate || !Array.isArray(schedule.enabledDays) || schedule.enabledDays.length === 0) {
         return res.status(400).json({ message: "Recurrent schedule must have a start date, end date, and at least one selected day." });
       }
@@ -74,13 +75,12 @@ exports.createClass = async (req, res) => {
           console.log("🔹 Calculated Target Date:", targetDate);
         
           formattedTimeSlots.push({
-            date: targetDate,
+            date: targetDate.toISOString(),
             day: slot.day,
             startTime: slot.startTime,
             endTime: slot.endTime,
           });
         });
-        ;
       }
 
       if (!formattedTimeSlots.length) {
@@ -109,7 +109,7 @@ exports.createClass = async (req, res) => {
         startDate: schedule.startDate || null,
         endDate: schedule.endDate || null,
         enabledDays: schedule.enabledDays || [],
-        timeSlots: formattedTimeSlots,
+        timeSlots: formattedTimeSlots,  // Add the formatted time slots here
         blockedDates: schedule.blockedDates || [],
       },
       trainer: trainer._id, // Assign trainer
@@ -126,6 +126,7 @@ exports.createClass = async (req, res) => {
     res.status(500).json({ message: "Server Error", error: error.message });
   }
 };
+
 
 
 // @desc    Get all classes
