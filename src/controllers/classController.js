@@ -38,42 +38,20 @@ exports.createClass = async (req, res) => {
         return res.status(400).json({ message: "Recurrent schedule must have a start date, end date, and at least one selected day." });
       }
 
-      // Convert start and end dates to Date objects
-      const startDate = new Date(schedule.startDate);
-      const endDate = new Date(schedule.endDate);
+      if (Array.isArray(schedule.timeSlots)) {
+        schedule.timeSlots.forEach((slot) => {
+          if (!slot.date||!slot.day || !slot.startTime || !slot.endTime) {
+            return res.status(400).json({ message: "Each time slot must have a date, start time, and end time." });
+          }
 
-      // 🔹 Loop over enabledDays to create time slots
-      schedule.enabledDays.forEach((day) => {
-        // Get the day of the week (0: Sunday, 1: Monday, ..., 6: Saturday)
-        const targetDay = daysOfWeek.indexOf(day); // Assuming daysOfWeek is defined somewhere
-        let currentDate = new Date(startDate);
-
-        // Find the first occurrence of the target day within the start date range
-        // Move currentDate to the first occurrence of the target day
-        while (currentDate.getDay() !== targetDay) {
-          currentDate.setDate(currentDate.getDate() + 1);
-        }
-
-        // Generate time slots for each occurrence of the selected day
-        while (currentDate <= endDate) {
-          schedule.timeSlots.forEach((slot) => {
-            if (!slot.startTime || !slot.endTime) {
-              return res.status(400).json({ message: "Each time slot must have a start time and end time." });
-            }
-
-            // Push time slot with the calculated date for the current iteration
-            formattedTimeSlots.push({
-              date: new Date(currentDate), // Assign the correct date
-              day: day, // Assuming 'day' is already a string (Monday, Tuesday, etc.)
-              startTime: slot.startTime,
-              endTime: slot.endTime,
-            });
+          formattedTimeSlots.push({
+            date: new Date(slot.date),
+            day: slot.day, // Assuming 'day' is already a string (Monday, Tuesday, etc.)
+            startTime: slot.startTime,
+            endTime: slot.endTime,
           });
-
-          // Move to the next occurrence of the same day of the week
-          currentDate.setDate(currentDate.getDate() + 7);
-        }
-      });
+        });
+      }
 
       if (!formattedTimeSlots.length) {
         return res.status(400).json({ message: "Recurrent schedule must have at least one valid time slot." });
@@ -119,7 +97,6 @@ exports.createClass = async (req, res) => {
     res.status(500).json({ message: "Server Error", error: error.message });
   }
 };
-
 
 
 
