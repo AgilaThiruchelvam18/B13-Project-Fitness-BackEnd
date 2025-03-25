@@ -18,7 +18,8 @@ const transporter = nodemailer.createTransport({
 exports.createClass = async (req, res) => {
   try {
     const { title, description, category, duration, price, capacity, schedule } = req.body;
-console.log("🔹 Received Class Payload:", req.body);
+    console.log("🔹 Received Class Payload:", req.body);
+
     // 🔹 Define days of the week
     const daysOfWeek = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
 
@@ -46,75 +47,54 @@ console.log("🔹 Received Class Payload:", req.body);
       const endDate = new Date(schedule.endDate);
 
       // 🔹 Flatten the time slots into an array
-      // Flatten the time slots into an array
-let timeSlotsArray = [];
-schedule.enabledDays.forEach((day) => {
-  const targetDay = daysOfWeek.indexOf(day); // Assuming daysOfWeek is defined here
-  let currentDate = new Date(startDate);
-  console.log("🔹 currentDate:", currentDate);
-  console.log("🔹 targetDay:", targetDay);
-  // Find the first occurrence of the target day within the start date range
-  while (currentDate.getDay() !== targetDay) {
-    currentDate.setDate(currentDate.getDate() + 1);
-  }
-
-  // Generate time slots for each occurrence of the selected day
-  while (currentDate <= endDate) {
-    if (schedule[day] && Array.isArray(schedule[day])) {
       schedule.enabledDays.forEach((day) => {
-        const targetDay = daysOfWeek.indexOf(day);
+        const targetDay = daysOfWeek.indexOf(day); // Get index of the day in the week
         let currentDate = new Date(startDate);
-      console.log("🔹 currentDate:", currentDate);
-      console.log("🔹 targetDay:", targetDay);
-        // Find the first occurrence of the target day
+        console.log("🔹 currentDate:", currentDate);
+        console.log("🔹 targetDay:", targetDay);
+
+        // Find the first occurrence of the target day within the start date range
         while (currentDate.getDay() !== targetDay) {
           currentDate.setDate(currentDate.getDate() + 1);
         }
-      
-        // Check if there are valid time slots for the day
-        if (schedule[day] && Array.isArray(schedule[day])) {
-          schedule[day].forEach((slot) => {
-            if (!slot.startTime || !slot.endTime) {
-              console.warn(`Missing time slot start or end time for ${day}`);
-              return res.status(400).json({ message: `Invalid time slot for ${day}. Both start and end times are required.` });
-            }
-      
-            const start = new Date(`1970-01-01T${slot.startTime}:00Z`);
-            const end = new Date(`1970-01-01T${slot.endTime}:00Z`);
-      console.log("🔹 start:", start);
-      console.log("🔹 end:", end);
-            if (start >= end) {
-              console.warn(`Start time is not before end time for ${day}`);
-              return res.status(400).json({ message: `Start time must be earlier than end time for ${day}.` });
-            }
-      console.log("🔹 startTime:", startTime);
-      console.log("🔹 endTime:", endTime);
-      console.log("🔹 day:", day);
-      console.log("🔹 currentDate:", currentDate);
 
-            // Push valid time slots
-            formattedTimeSlots.push({
-              date: new Date(currentDate),
-              day: day,
-              startTime: slot.startTime,
-              endTime: slot.endTime,
+        // Generate time slots for each occurrence of the selected day
+        while (currentDate <= endDate) {
+          // Check if there are valid time slots for the day
+          if (schedule[day] && Array.isArray(schedule[day])) {
+            schedule[day].forEach((slot) => {
+              if (!slot.startTime || !slot.endTime) {
+                console.warn(`Missing time slot start or end time for ${day}`);
+                return res.status(400).json({ message: `Invalid time slot for ${day}. Both start and end times are required.` });
+              }
+
+              const start = new Date(`1970-01-01T${slot.startTime}:00Z`);
+              const end = new Date(`1970-01-01T${slot.endTime}:00Z`);
+              console.log("🔹 start:", start);
+              console.log("🔹 end:", end);
+
+              if (start >= end) {
+                console.warn(`Start time is not before end time for ${day}`);
+                return res.status(400).json({ message: `Start time must be earlier than end time for ${day}.` });
+              }
+
+              console.log("🔹 day:", day);
+              console.log("🔹 currentDate:", currentDate);
+
+              // Push valid time slots
+              formattedTimeSlots.push({
+                date: new Date(currentDate),
+                day: day,
+                startTime: slot.startTime,
+                endTime: slot.endTime,
+              });
             });
-          });
-        }
-      
-        console.log(`🔹 Checking day: ${day}, formattedTimeSlots so far:`, formattedTimeSlots);
-      
-        // Move to the next occurrence of the same day
-        currentDate.setDate(currentDate.getDate() + 7);
-      });
-      
-    }
-console.log("🔹 formattedTimeSlots:", formattedTimeSlots);
-    // Move to the next occurrence of the same day of the week
-    currentDate.setDate(currentDate.getDate() + 7);
-  }
-});
+          }
 
+          // Move to the next occurrence of the same day of the week
+          currentDate.setDate(currentDate.getDate() + 7);
+        }
+      });
 
       if (formattedTimeSlots.length === 0) {
         return res.status(400).json({ message: "Recurrent schedule must have at least one valid time slot." });
@@ -160,6 +140,7 @@ console.log("🔹 formattedTimeSlots:", formattedTimeSlots);
     res.status(500).json({ message: "Server Error", error: error.message });
   }
 };
+
 
 
 
