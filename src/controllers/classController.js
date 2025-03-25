@@ -39,49 +39,36 @@ exports.createClass = async (req, res) => {
         return res.status(400).json({ message: "Recurrent schedule must have a start date, end date, and at least one selected day." });
       }
 
-      console.log("🔹 schedule.timeSlots", schedule.timeSlots);  // Log the time slots array
+      const startDate = new Date(schedule.startDate);
+      const endDate = new Date(schedule.endDate);
+      const enabledDays = schedule.enabledDays || [];  // Ensure this is an array
+      const sessions = [];
 
-      if (Array.isArray(schedule.timeSlots)) {
-        console.log("🔹 Is timeSlots an array?", Array.isArray(schedule.timeSlots));
-        console.log("🔹 timeSlots Length:", schedule.timeSlots.length);
+      let currentDate = new Date(startDate);
+      while (currentDate <= endDate) {
+        const dateString = currentDate.toLocaleDateString("en-CA"); // Ensures YYYY-MM-DD format
+        const dayName = currentDate.toLocaleDateString("en-US", { weekday: "long" });
 
-        schedule.timeSlots.forEach((slot) => {
-          if (!slot.date || !slot.day || !slot.startTime || !slot.endTime) {
-            return res.status(400).json({ message: "Each time slot must have a date, start time, and end time." });
-          }
-        
-          console.log("🔹 slot", slot);
-          console.log("🔹 slot.date", slot.date);
-          console.log("🔹 slot.day", slot.day);
-          console.log("🔹 slot.startTime", slot.startTime);
-          console.log("🔹 slot.endTime", slot.endTime);
-        
-          // Calculate the correct date for the slot based on the startDate and the enabled day
-          let startDate = new Date(schedule.startDate);
-          let targetDate = new Date(startDate);
-          
-          // Adjust the targetDate based on the 'day' in the slot
-          const dayOfWeek = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
-          const dayIndex = dayOfWeek.indexOf(slot.day); // Get the index of the day
-        
-          // Get the difference in days between the start date and the desired day of the week
-          let dayDifference = dayIndex - targetDate.getDay();
-          if (dayDifference < 0) {
-            dayDifference += 7; // If the day has passed in the current week, add 7 days
-          }
-        
-          targetDate.setDate(targetDate.getDate() + dayDifference);
-        
-          console.log("🔹 Calculated Target Date:", targetDate);
-        
-          formattedTimeSlots.push({
-            date: targetDate.toISOString(),
-            day: slot.day,
-            startTime: slot.startTime,
-            endTime: slot.endTime,
+        // Use .includes() to check if the dayName is in the enabledDays array
+        if (enabledDays.includes(dayName)) {
+          // Filter timeSlots where the day matches
+          const daySlots = schedule.timeSlots.filter(slot => slot.day === dayName);
+
+          daySlots.forEach((slot, index) => {
+            sessions.push({
+              date: dateString,
+              day: slot.day,
+              startTime: slot.startTime,
+              endTime: slot.endTime,
+            });
           });
-        });
+        }
+
+        // Move to the next date
+        currentDate.setDate(currentDate.getDate() + 1);
       }
+
+      formattedTimeSlots = sessions;  // Assign the created sessions to formattedTimeSlots
 
       if (!formattedTimeSlots.length) {
         return res.status(400).json({ message: "Recurrent schedule must have at least one valid time slot." });
@@ -126,6 +113,7 @@ exports.createClass = async (req, res) => {
     res.status(500).json({ message: "Server Error", error: error.message });
   }
 };
+
 
 
 
