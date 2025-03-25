@@ -198,27 +198,48 @@ exports.updateClass = async (req, res) => {
 
       // 🔹 Update a particular slot (if `updatedSlot` is provided)
       // Update a specific time slot if 'updatedSlot' is provided
-if (updatedSlot) {
-  const slotIndex = fitnessClass.schedule.timeSlots.findIndex(
-      slot => slot._id.toString() === updatedSlot._id
-  );
-
-  if (slotIndex !== -1) {
-      // Update only the selected slot
-      fitnessClass.schedule.timeSlots[slotIndex].startTime = updatedSlot.startTime;
-      fitnessClass.schedule.timeSlots[slotIndex].endTime = updatedSlot.endTime;
-  } else {
-      return res.status(404).json({ message: "Time slot not found for update." });
-  }
-} else {
-  // If no specific slot to update, replace all slots
-  fitnessClass.schedule.timeSlots = validTimeSlots.map(slot => ({
-      date: new Date(slot.date),
-      day: slot.day,
-      startTime: slot.startTime,
-      endTime: slot.endTime,
-  }));
-}
+      if (updatedSlot) {
+        const slotIndex = fitnessClass.schedule.timeSlots.findIndex(
+          slot => slot._id.toString() === updatedSlot._id
+        );
+      
+        if (slotIndex !== -1) {
+          // 🔹 Update only the required slot
+          fitnessClass.schedule.timeSlots[slotIndex] = {
+            ...fitnessClass.schedule.timeSlots[slotIndex],
+            startTime: updatedSlot.startTime,
+            endTime: updatedSlot.endTime,
+            date: new Date(updatedSlot.date),
+          };
+        } else {
+          return res.status(404).json({ message: "Time slot not found for update." });
+        }
+      } else {
+        // ✅ Merge new slots without deleting existing ones
+        validTimeSlots.forEach((newSlot) => {
+          const existingSlotIndex = fitnessClass.schedule.timeSlots.findIndex(
+            slot => slot.date.toISOString() === new Date(newSlot.date).toISOString()
+          );
+      
+          if (existingSlotIndex !== -1) {
+            // 🔹 Update existing slot
+            fitnessClass.schedule.timeSlots[existingSlotIndex] = {
+              ...fitnessClass.schedule.timeSlots[existingSlotIndex],
+              startTime: newSlot.startTime,
+              endTime: newSlot.endTime,
+            };
+          } else {
+            // 🔹 Add new slot without deleting others
+            fitnessClass.schedule.timeSlots.push({
+              date: new Date(newSlot.date),
+              day: newSlot.day,
+              startTime: newSlot.startTime,
+              endTime: newSlot.endTime,
+            });
+          }
+        });
+      }
+      
 
     }
 
