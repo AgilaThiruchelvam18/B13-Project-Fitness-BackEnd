@@ -18,7 +18,7 @@ const transporter = nodemailer.createTransport({
 exports.createClass = async (req, res) => {
   try {
     const { title, description, category, duration, price, capacity, schedule } = req.body;
-
+console.log("🔹 Received Class Payload:", req.body);
     // 🔹 Define days of the week
     const daysOfWeek = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
 
@@ -80,7 +80,7 @@ schedule.enabledDays.forEach((day) => {
         });
       });
     }
-
+console.log("🔹 formattedTimeSlots:", formattedTimeSlots);
     // Move to the next occurrence of the same day of the week
     currentDate.setDate(currentDate.getDate() + 7);
   }
