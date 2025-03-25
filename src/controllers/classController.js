@@ -15,47 +15,144 @@ const transporter = nodemailer.createTransport({
 // @route   POST /api/classes
 // @access  Trainer only
 
+exports.createClass = async (req, res) => {
+  try {
+    const { title, description, category, duration, price, capacity, schedule } = req.body;
+console.log("🔹 Received Class Payload:", req.body);
+    // 🔹 Define days of the week
+    const daysOfWeek = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
+
+    // 🔹 Validate Schedule Type
+    if (!["One-time", "Recurrent"].includes(schedule.scheduleType)) {
+      return res.status(400).json({ message: "Invalid schedule type" });
+    }
+
+    // 🔹 Validate One-time Schedule
+    if (schedule.scheduleType === "One-time") {
+      if (!schedule.oneTimeDate || !schedule.oneTimeStartTime || !schedule.oneTimeEndTime) {
+        return res.status(400).json({ message: "One-time schedule must include a date and start/end time." });
+      }
+    }
+
+    // 🔹 Validate Recurrent Schedule
+    let formattedTimeSlots = [];
+    if (schedule.scheduleType === "Recurrent") {
+      if (!schedule.startDate || !schedule.endDate || !Array.isArray(schedule.enabledDays) || schedule.enabledDays.length === 0) {
+        return res.status(400).json({ message: "Recurrent schedule must have a start date, end date, and at least one selected day." });
+      }
+
+      // Convert start and end dates to Date objects
+      const startDate = new Date(schedule.startDate);
+      const endDate = new Date(schedule.endDate);
+
+      // 🔹 Flatten the time slots into an array
+      // Flatten the time slots into an array
+let timeSlotsArray = [];
 schedule.enabledDays.forEach((day) => {
-  const targetDay = daysOfWeek.indexOf(day);
+  const targetDay = daysOfWeek.indexOf(day); // Assuming daysOfWeek is defined here
   let currentDate = new Date(startDate);
 
-  // Find the first occurrence of the target day
+  // Find the first occurrence of the target day within the start date range
   while (currentDate.getDay() !== targetDay) {
     currentDate.setDate(currentDate.getDate() + 1);
   }
 
-  // Check if there are valid time slots for the day
-  if (schedule[day] && Array.isArray(schedule[day])) {
-    schedule[day].forEach((slot) => {
-      if (!slot.startTime || !slot.endTime) {
-        console.warn(`Missing time slot start or end time for ${day}`);
-        return res.status(400).json({ message: `Invalid time slot for ${day}. Both start and end times are required.` });
-      }
-
-      const start = new Date(`1970-01-01T${slot.startTime}:00Z`);
-      const end = new Date(`1970-01-01T${slot.endTime}:00Z`);
-
-      if (start >= end) {
-        console.warn(`Start time is not before end time for ${day}`);
-        return res.status(400).json({ message: `Start time must be earlier than end time for ${day}.` });
-      }
-
-      // Push valid time slots
-      formattedTimeSlots.push({
-        date: new Date(currentDate),
-        day: day,
-        startTime: slot.startTime,
-        endTime: slot.endTime,
+  // Generate time slots for each occurrence of the selected day
+  while (currentDate <= endDate) {
+    if (schedule[day] && Array.isArray(schedule[day])) {
+      schedule.enabledDays.forEach((day) => {
+        const targetDay = daysOfWeek.indexOf(day);
+        let currentDate = new Date(startDate);
+      
+        // Find the first occurrence of the target day
+        while (currentDate.getDay() !== targetDay) {
+          currentDate.setDate(currentDate.getDate() + 1);
+        }
+      
+        // Check if there are valid time slots for the day
+        if (schedule[day] && Array.isArray(schedule[day])) {
+          schedule[day].forEach((slot) => {
+            if (!slot.startTime || !slot.endTime) {
+              console.warn(`Missing time slot start or end time for ${day}`);
+              return res.status(400).json({ message: `Invalid time slot for ${day}. Both start and end times are required.` });
+            }
+      
+            const start = new Date(`1970-01-01T${slot.startTime}:00Z`);
+            const end = new Date(`1970-01-01T${slot.endTime}:00Z`);
+      
+            if (start >= end) {
+              console.warn(`Start time is not before end time for ${day}`);
+              return res.status(400).json({ message: `Start time must be earlier than end time for ${day}.` });
+            }
+      
+            // Push valid time slots
+            formattedTimeSlots.push({
+              date: new Date(currentDate),
+              day: day,
+              startTime: slot.startTime,
+              endTime: slot.endTime,
+            });
+          });
+        }
+      
+        console.log(`🔹 Checking day: ${day}, formattedTimeSlots so far:`, formattedTimeSlots);
+      
+        // Move to the next occurrence of the same day
+        currentDate.setDate(currentDate.getDate() + 7);
       });
-    });
+      
+    }
+console.log("🔹 formattedTimeSlots:", formattedTimeSlots);
+    // Move to the next occurrence of the same day of the week
+    currentDate.setDate(currentDate.getDate() + 7);
   }
-
-  console.log(`🔹 Checking day: ${day}, formattedTimeSlots so far:`, formattedTimeSlots);
-
-  // Move to the next occurrence of the same day
-  currentDate.setDate(currentDate.getDate() + 7);
 });
 
+
+      if (formattedTimeSlots.length === 0) {
+        return res.status(400).json({ message: "Recurrent schedule must have at least one valid time slot." });
+      }
+    }
+
+    // 🔹 Ensure Trainer Exists
+    const trainer = await Trainer.findById(req.user._id);
+    if (!trainer) {
+      return res.status(404).json({ message: "Trainer not found" });
+    }
+
+    // 🔹 Create New Class
+    const newClass = new Class({
+      title,
+      description,
+      category,
+      duration,
+      price,
+      capacity,
+      schedule: {
+        scheduleType: schedule.scheduleType,
+        oneTimeDate: schedule.oneTimeDate || null,
+        oneTimeStartTime: schedule.oneTimeStartTime || null,
+        oneTimeEndTime: schedule.oneTimeEndTime || null,
+        startDate: schedule.startDate || null,
+        endDate: schedule.endDate || null,
+        enabledDays: schedule.enabledDays || [],
+        timeSlots: formattedTimeSlots,
+        blockedDates: schedule.blockedDates || [],
+      },
+      trainer: trainer._id, // Assign trainer
+    });
+
+    // 🔹 Save Class & Update Trainer
+    await newClass.save();
+    trainer.classes.push(newClass._id);
+    await trainer.save();
+
+    res.status(201).json(newClass);
+  } catch (error) {
+    console.error("Error creating class:", error);
+    res.status(500).json({ message: "Server Error", error: error.message });
+  }
+};
 
 
 
