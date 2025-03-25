@@ -5,8 +5,8 @@ const {
   deleteClass,
   getClassById,
   getAllClasses,
-  // getScheduledClasses,
-  // getTrainerClasses,  // New controller for fetching trainer's classes
+  getScheduledClasses,
+  getTrainerClasses,  // New controller for fetching trainer's classes
 }= require( "../controllers/classController.js");
 const { protectTrainer } = require("../middleware/authMiddleware");
 const router = express.Router();
@@ -15,7 +15,7 @@ const router = express.Router();
 router.post("/", protectTrainer, createClass);
 
 // Update class (Trainer only)
-router.put("/:classId/reschedule",protectTrainer, updateClass);
+router.put("/:classId/reschedule", protectTrainer, updateClass);
 
 // Delete class (Trainer only)
 router.delete("/:classId/cancel", protectTrainer, deleteClass);
@@ -24,8 +24,8 @@ router.delete("/:classId/cancel", protectTrainer, deleteClass);
 router.get("/:id", getClassById);
 
 // Get all classes (Public or protected if needed)
-router.get("/", getAllClasses);
-// router.get("/",protectTrainer, getScheduledClasses);
+// router.get("/", getAllClasses);
+router.get("/",protectTrainer, getScheduledClasses);
 
 // Get classes created by the logged-in trainer
 // router.get("/trainer", protectTrainer, getTrainerClasses);

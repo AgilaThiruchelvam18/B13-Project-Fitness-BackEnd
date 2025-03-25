@@ -18,10 +18,6 @@ const transporter = nodemailer.createTransport({
 exports.createClass = async (req, res) => {
   try {
     const { title, description, category, duration, price, capacity, schedule } = req.body;
-    console.log("🔹 Received Class Payload:", req.body);
-
-    // 🔹 Define days of the week
-    const daysOfWeek = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
 
     // 🔹 Validate Schedule Type
     if (!["One-time", "Recurrent"].includes(schedule.scheduleType)) {
@@ -37,66 +33,27 @@ exports.createClass = async (req, res) => {
 
     // 🔹 Validate Recurrent Schedule
     let formattedTimeSlots = [];
-    console.log("Schedule Data:", schedule);
-console.log("Day Specific Data for Monday:", schedule["Monday"]);
-
     if (schedule.scheduleType === "Recurrent") {
       if (!schedule.startDate || !schedule.endDate || !Array.isArray(schedule.enabledDays) || schedule.enabledDays.length === 0) {
         return res.status(400).json({ message: "Recurrent schedule must have a start date, end date, and at least one selected day." });
       }
 
-      // Convert start and end dates to Date objects
-      const startDate = new Date(schedule.startDate);
-      const endDate = new Date(schedule.endDate);
-
-      // 🔹 Flatten the time slots into an array
-      schedule.enabledDays.forEach((day) => {
-        const targetDay = daysOfWeek.indexOf(day); // Get index of the day in the week
-        let currentDate = new Date(startDate);
-        console.log("🔹 Current Date Before Looping:", currentDate);
-        console.log("🔹 Target Day:", targetDay);
-      
-        while (currentDate.getDay() !== targetDay) {
-          currentDate.setDate(currentDate.getDate() + 1);
-        }
-      
-        while (currentDate <= endDate) {
-          console.log("🔹 Checking Day:", currentDate);
-          if (schedule[day] && Array.isArray(schedule[day])) {
-            schedule[day].forEach((slot) => {
-              if (!slot.startTime || !slot.endTime) {
-                console.warn(`Missing time slot start or end time for ${day}`);
-                return res.status(400).json({ message: `Invalid time slot for ${day}. Both start and end times are required.` });
-              }
-      
-              const start = new Date(`1970-01-01T${slot.startTime}:00Z`);
-              const end = new Date(`1970-01-01T${slot.endTime}:00Z`);
-              console.log("🔹 Start Time:", start);
-              console.log("🔹 End Time:", end);
-      
-              if (start >= end) {
-                console.warn(`Start time is not before end time for ${day}`);
-                return res.status(400).json({ message: `Start time must be earlier than end time for ${day}.` });
-              }
-      
-              console.log("🔹 Adding Time Slot for", day, ":", currentDate);
-      
-              formattedTimeSlots.push({
-                date: new Date(currentDate),
-                day: day,
-                startTime: slot.startTime,
-                endTime: slot.endTime,
-              });
-            });
+      if (Array.isArray(schedule.timeSlots)) {
+        schedule.timeSlots.forEach((slot) => {
+          if (!slot.date||!slot.day || !slot.startTime || !slot.endTime) {
+            return res.status(400).json({ message: "Each time slot must have a date, start time, and end time." });
           }
-          currentDate.setDate(currentDate.getDate() + 7);
-        }
-      });
-      
-      console.log("🔹 Formatted Time Slots:", formattedTimeSlots);
-      
 
-      if (formattedTimeSlots.length === 0) {
+          formattedTimeSlots.push({
+            date: new Date(slot.date),
+            day: slot.day, // Assuming 'day' is already a string (Monday, Tuesday, etc.)
+            startTime: slot.startTime,
+            endTime: slot.endTime,
+          });
+        });
+      }
+
+      if (!formattedTimeSlots.length) {
         return res.status(400).json({ message: "Recurrent schedule must have at least one valid time slot." });
       }
     }
@@ -140,9 +97,6 @@ console.log("Day Specific Data for Monday:", schedule["Monday"]);
     res.status(500).json({ message: "Server Error", error: error.message });
   }
 };
-
-
-
 
 
 
