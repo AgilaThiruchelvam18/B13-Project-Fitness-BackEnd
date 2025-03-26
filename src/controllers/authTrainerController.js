@@ -26,7 +26,8 @@ exports.register = async (req, res) => {
       experience,
       certifications
     } = req.body;
-
+    console.log("Received Files:", req.files); // Debugging
+    console.log("Request Body:", req.body);  
     let existingTrainer = await Trainer.findOne({ email });
     if (existingTrainer) {
       return res.status(400).json({ message: "Trainer already exists" });
