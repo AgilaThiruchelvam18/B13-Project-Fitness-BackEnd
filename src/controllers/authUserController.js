@@ -16,7 +16,7 @@ exports.register = async (req, res) => {
     try {
       const { userName, email, password,fitnessGoals,age,gender,phone} = req.body;  
       console.log("Received Request Body:", req.body); // ✅ Debug request data
-
+      console.log("Received Headers:", req.headers);
       // const profilePicture = req.file ? req.file.buffer.toString("base64") : null;   
       let user = await User.findOne({ email });
       if (user) return res.status(400).json({ message: "User already exists" });

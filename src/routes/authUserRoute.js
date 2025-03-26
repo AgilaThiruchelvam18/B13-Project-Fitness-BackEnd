@@ -12,14 +12,14 @@ const {
 const { protectCustomer, protectTrainer } = require("../middleware/authMiddleware");
 
 // const authMiddleware = require("../middleware/authMiddleware");
-const multer = require("multer");
+// const multer = require("multer");
 
-const storage = multer.memoryStorage(); // Store in memory or change to disk storage if needed
-const upload = multer({ storage });
- upload.single("profilePicture")
+// const storage = multer.memoryStorage(); // Store in memory or change to disk storage if needed
+// const upload = multer({ storage });
+//  upload.single("profilePicture")
 const router = express.Router();
 const registerValidation = [
-    check("userName", "Please include a valid userName"),
+    check("userName", "Please include a valid userName").not().isEmpty(),,
     check("email", "Please include a valid email").isEmail(),
     check("password", "Password must be at least 6 characters long").isLength({ min: 6 }),
   ];
