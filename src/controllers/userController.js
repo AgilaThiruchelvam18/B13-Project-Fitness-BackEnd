@@ -2,7 +2,7 @@ const User = require("../models/User");
 const bcrypt = require("bcryptjs");
 const Class = require("../models/Class.js");
 // const Trainer = require("../models/Trainer.js");
-const User = require("../models/User");
+// const User = require("../models/User");
 // Get all users
 // exports.getAllUsers = async (req, res) => {
 //   try {
