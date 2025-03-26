@@ -13,74 +13,18 @@ const transporter = nodemailer.createTransport({
 });
 
 // Register Trainer
-exports.register = async (req, res) => {
-  try {
-    const {
-      userName,
-      email,
-      password,
-      phone,
-      bio,
-      expertise,
-      specialization,
-      experience,
-      certifications
-    } = req.body;
-    console.log("Received Files:", req.files); // Debugging
-    console.log("Request Body:", req.body);  
-    let existingTrainer = await Trainer.findOne({ email });
-    if (existingTrainer) {
-      return res.status(400).json({ message: "Trainer already exists" });
-    }
-
-    // Hash password
-    const salt = await bcrypt.genSalt(10);
-    const hashedPassword = await bcrypt.hash(password, salt);
-
-    // Handle file uploads
-    let mediaUploads = [];
-    if (req.files && req.files.length > 0) {
-      console.log("Files received:", req.files); // Debugging log
-
-      mediaUploads = req.files.map((file) => ({
-        url: `/uploads/${file.filename}`, // Relative path
-        type: file.mimetype.startsWith("image") ? "image" : "video"
-      }));
-    } else {
-      console.log("No files uploaded."); // Debugging log
-    }
-
-    // Create Trainer
-    const trainer = new Trainer({
-      userName,
-      email,
-      password: hashedPassword,
-      expertise,
-      phone: phone || "",
-      bio,
-      specialization,
-      experience: experience || 0,
-      certifications,
-      media: mediaUploads.length > 0 ? mediaUploads : []  // 👈 Ensure media is stored
-    });
-
-    await trainer.save();
-
-    res.status(201).json({
-      message: "Trainer registered successfully",
-      trainer: {
-        id: trainer._id,
-        email: trainer.email,
-        userName: trainer.userName,
-        media: trainer.media,
-      },
-    });
-  } catch (error) {
-    console.error("Error registering trainer:", error); // Debugging log
-    res.status(500).json({ message: "Error creating trainer", error: error.message });
-  }
-};
-
+const trainer = new Trainer({
+  userName,
+  email,
+  password: hashedPassword,
+  expertise,
+  phone: phone || "",
+  bio,
+  specialization,
+  experience: experience || 0,
+  certifications,
+  mediaUploads: mediaUploads.length > 0 ? mediaUploads : []  // Force-saving
+});
 
 // Trainer Login
 exports.login = async (req, res) => {
