@@ -7,7 +7,7 @@ const app = express();
 const cookieParser = require("cookie-parser");
 const cors = require("cors");
 const path = require("path");
-const express = require("express");
+// const express = require("express");
 
 // Serve uploaded files
 app.use("/uploads", express.static(path.join(__dirname, "uploads")));
