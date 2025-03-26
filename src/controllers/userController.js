@@ -1,12 +1,27 @@
 const User = require("../models/User");
 const bcrypt = require("bcryptjs");
+const Class = require("../models/Class.js");
+// const Trainer = require("../models/Trainer.js");
+const User = require("../models/User");
 // Get all users
-exports.getAllUsers = async (req, res) => {
+// exports.getAllUsers = async (req, res) => {
+//   try {
+//     const users = await User.find();
+//     res.status(200).json(users);
+//   } catch (error) {
+//     res.status(500).json({ message: error.message });
+//   }
+// };
+exports.getAllClasses = async (req, res) => {
   try {
-    const users = await User.find();
-    res.status(200).json(users);
+    const classes = await Class.find().populate({
+      path: "trainer",
+      select: "name email",
+      options: { strictPopulate: false } // ✅ Prevents errors if trainer is missing
+    });
+    res.status(200).json(classes);
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    res.status(500).json({ message: "Server Error", error: error.message });
   }
 };
 

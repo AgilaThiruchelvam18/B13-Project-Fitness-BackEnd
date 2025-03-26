@@ -4,7 +4,7 @@ const {
   updateClass,
   deleteClass,
   getClassById,
-  getAllClasses,
+
   getScheduledClasses,
   getTrainerClasses,  // New controller for fetching trainer's classes
 }= require( "../controllers/classController.js");
