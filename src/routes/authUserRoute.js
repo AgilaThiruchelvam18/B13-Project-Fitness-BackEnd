@@ -29,7 +29,7 @@ const registerValidation = [
     check("password", "Password is required").not().isEmpty(),
   ];
   
-  router.post("/register", registerValidation,upload.single("profilePicture"),(req, res) => {
+  router.post("/register", registerValidation,(req, res) => {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
       return res.status(400).json({ errors: errors.array() });
