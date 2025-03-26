@@ -3,7 +3,9 @@ const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const nodemailer = require("nodemailer");
 const Trainer = require("../models/Trainer");
-
+const dotenv = require("dotenv");
+// const connectDB = require('./src/config/db.js');
+dotenv.config();
 const transporter = nodemailer.createTransport({
   service: "gmail",
   auth: {
@@ -43,7 +45,8 @@ exports.register = async (req, res) => {
       console.log("Files received:", req.files); // Debugging log
 
       mediaUploads = req.files.map((file) => ({
-        url: `https://fitnesshub-aa.netlify.app/uploads/${file.filename}`, // Relative path
+        url: `${process.env.req.protocol}://${process.env.host}/uploads/${file.filename}`,
+       
         type: file.mimetype.startsWith("image") ? "image" : "video"
       }));
     } else {
