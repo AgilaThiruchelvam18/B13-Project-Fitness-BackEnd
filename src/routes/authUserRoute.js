@@ -10,12 +10,6 @@ const {
 } = require("../controllers/authUserController");
 const { protectCustomer, protectTrainer } = require("../middleware/authMiddleware");
 
-// const authMiddleware = require("../middleware/authMiddleware");
-// const multer = require("multer");
-
-// const storage = multer.memoryStorage(); // Store in memory or change to disk storage if needed
-// const upload = multer({ storage });
-//  upload.single("profilePicture")
 const router = express.Router();
 const registerValidation = [
     check("userName", "Please include a valid userName").not().isEmpty(),
@@ -59,5 +53,4 @@ router.post(
 router.get("/profile", protectCustomer, getUserProfile);
 router.post("/logout", protectCustomer, logoutUser);
 
-// router.put("/change-password", protectCustomer,passwordChange);
 module.exports = router;
