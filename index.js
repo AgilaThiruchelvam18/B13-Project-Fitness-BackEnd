@@ -6,7 +6,11 @@ dotenv.config();
 const app = express();
 const cookieParser = require("cookie-parser");
 const cors = require("cors");
+const path = require("path");
+const express = require("express");
 
+// Serve uploaded files
+app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 app.use(cors({
   origin: ["https://fitnesshub-aa.netlify.app", "https://fitnesshub-5yf3.onrender.com", "http://localhost:5173"],
   credentials: true, 
