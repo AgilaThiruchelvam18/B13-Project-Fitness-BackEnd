@@ -115,34 +115,34 @@ exports.getUserProfile = async (req, res) => {
   }
 };
 
-exports.changePassword = async (req, res) => {
-  try {
-    const { currentPassword, newPassword } = req.body;
-    const user = await User.findById(req.user.id);
+// exports.changePassword = async (req, res) => {
+//   try {
+//     const { currentPassword, newPassword } = req.body;
+//     const user = await User.findById(req.user.id);
 
-    if (!user) {
-      return res.status(404).json({ message: "User not found" });
-    }
+//     if (!user) {
+//       return res.status(404).json({ message: "User not found" });
+//     }
 
-    // Check if the current password matches
-    const isMatch = await bcrypt.compare(currentPassword, user.password);
-    if (!isMatch) {
-      return res.status(400).json({ message: "Incorrect current password" });
-    }
+//     // Check if the current password matches
+//     const isMatch = await bcrypt.compare(currentPassword, user.password);
+//     if (!isMatch) {
+//       return res.status(400).json({ message: "Incorrect current password" });
+//     }
 
-    // Hash new password
-    const salt = await bcrypt.genSalt(10);
-    const hashedPassword = await bcrypt.hash(newPassword, salt);
+//     // Hash new password
+//     const salt = await bcrypt.genSalt(10);
+//     const hashedPassword = await bcrypt.hash(newPassword, salt);
 
-    // Update password
-    user.password = hashedPassword;
-    await user.save();
+//     // Update password
+//     user.password = hashedPassword;
+//     await user.save();
 
-    res.status(200).json({ message: "Password changed successfully" });
-  } catch (error) {
-    res.status(500).json({ message: "Server error", error });
-  }
-};
+//     res.status(200).json({ message: "Password changed successfully" });
+//   } catch (error) {
+//     res.status(500).json({ message: "Server error", error });
+//   }
+// };
 exports.logoutUser = (req, res) => {
   res.clearCookie("customer_jwt", { httpOnly: true, secure: true, sameSite: "None" });
   res.status(200).json({ message: "Logged out successfully" });

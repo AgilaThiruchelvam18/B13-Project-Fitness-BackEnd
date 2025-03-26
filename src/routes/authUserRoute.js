@@ -18,7 +18,7 @@ const { protectCustomer, protectTrainer } = require("../middleware/authMiddlewar
 //  upload.single("profilePicture")
 const router = express.Router();
 const registerValidation = [
-    check("userName", "Please include a valid userName").not().isEmpty(),,
+    check("userName", "Please include a valid userName").not().isEmpty(),
     check("email", "Please include a valid email").isEmail(),
     check("password", "Password must be at least 6 characters long").isLength({ min: 6 }),
   ];
