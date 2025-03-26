@@ -37,11 +37,9 @@ exports.createReview = async (req, res) => {
     trainer.reviews.push(newReview);
     trainer.ratings.totalReviews += 1;
       trainer.ratings.averageRating =
-      Math.min(
-        5,
-        (trainer.ratings.averageRating * (trainer.ratings.totalReviews - 1) + rating) /
+    (trainer.ratings.averageRating + rating) /
           trainer.ratings.totalReviews
-      );
+      
     await trainer.save();
 
     res.status(201).json({ message: "Review added successfully", review: newReview });
