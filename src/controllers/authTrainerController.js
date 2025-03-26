@@ -61,11 +61,7 @@ exports.register = async (req, res) => {
       specialization,
       experience: experience || 0,
       certifications,
-      media: mediaUploads,
-      ratings: {
-        averageRating: 4,
-        totalReviews: 5, 
-      },
+      media: mediaUploads.length > 0 ? mediaUploads : []  // 👈 Ensure media is stored
     });
 
     await trainer.save();
