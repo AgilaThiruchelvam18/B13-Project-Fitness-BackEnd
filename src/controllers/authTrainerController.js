@@ -45,7 +45,7 @@ exports.register = async (req, res) => {
       console.log("Files received:", req.files); // Debugging log
 
       mediaUploads = req.files.map((file) => ({
-        url: `${process.env.req.protocol}://${process.env.host}/uploads/${file.filename}`,
+        url: `${process.env.protocol}://${process.env.host}/uploads/${file.filename}`,
        
         type: file.mimetype.startsWith("image") ? "image" : "video"
       }));
