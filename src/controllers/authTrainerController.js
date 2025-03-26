@@ -35,48 +35,55 @@ exports.register = async (req, res) => {
     // Hash password
     const salt = await bcrypt.genSalt(10);
     const hashedPassword = await bcrypt.hash(password, salt);
-console.log(req.files);
+
+    // Handle file uploads
     let mediaUploads = [];
-    if (req.files) {
+    if (req.files && req.files.length > 0) {
+      console.log("Files received:", req.files); // Debugging log
+
       mediaUploads = req.files.map((file) => ({
-        url: `uploads/${file.filename}`,
+        url: `/uploads/${file.filename}`, // Relative path
         type: file.mimetype.startsWith("image") ? "image" : "video"
       }));
+    } else {
+      console.log("No files uploaded."); // Debugging log
     }
 
+    // Create Trainer
     const trainer = new Trainer({
       userName,
       email,
       password: hashedPassword,
       expertise,
-      phone: req.body.phone || "",
+      phone: phone || "",
       bio,
       specialization,
       experience: experience || 0,
       certifications,
       media: mediaUploads,
-            ratings: {
+      ratings: {
         averageRating: 4,
         totalReviews: 5, 
       },
-      // isVerified: false, // Default is false, change to true after email verification
     });
 
     await trainer.save();
-    
+
     res.status(201).json({
       message: "Trainer registered successfully",
       trainer: {
         id: trainer._id,
         email: trainer.email,
         userName: trainer.userName,
-        // isVerified: trainer.isVerified,
+        media: trainer.media,
       },
     });
   } catch (error) {
+    console.error("Error registering trainer:", error); // Debugging log
     res.status(500).json({ message: "Error creating trainer", error: error.message });
   }
 };
+
 
 // Trainer Login
 exports.login = async (req, res) => {
