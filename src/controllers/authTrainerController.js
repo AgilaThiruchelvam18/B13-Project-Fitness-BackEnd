@@ -192,8 +192,16 @@ exports.resetPassword = async (req, res) => {
 
 exports.getTrainerProfile = async (req, res) => {
   try {
-    const trainer = await Trainer.findById(req.user._id).populate("classes").populate("reviews.user"); // Populate classes
-    res.json(trainer);
+    const trainer = await Trainer.findById(req.user._id)
+    .populate({
+      path: "classes",
+    })
+    .populate({
+      path: "reviews.user", // Populate user inside reviews
+      model: "User",
+      select: "userName email", // Fetch only needed fields
+    });
+        res.json(trainer);
     } catch (error) {
     res.status(500).json({ message: "Server Error", error: error.message });
   }
