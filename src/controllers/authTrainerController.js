@@ -43,7 +43,7 @@ exports.register = async (req, res) => {
       console.log("Files received:", req.files); // Debugging log
 
       mediaUploads = req.files.map((file) => ({
-        url: `https://fitnesshub-aa.netlify.app/uploads/${file.filename}`, // Relative path
+        url: `https://http://localhost:5173/uploads/${file.filename}`, // Relative path
         type: file.mimetype.startsWith("image") ? "image" : "video"
       }));
     } else {

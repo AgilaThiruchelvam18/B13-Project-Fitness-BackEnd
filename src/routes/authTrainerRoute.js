@@ -48,7 +48,7 @@ const upload = multer({
   limits: { fileSize: 5 * 1024 * 1024 } // Limit: 5MB
 });
 
-module.exports = upload;
+
 
 // Validation Rules
 const registerValidation = [
