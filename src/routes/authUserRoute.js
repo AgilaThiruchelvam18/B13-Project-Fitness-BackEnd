@@ -6,8 +6,7 @@ const {
   getUserProfile,
   login,
   register,
-  logoutUser,
-  passwordChange
+  logoutUser
 } = require("../controllers/authUserController");
 const { protectCustomer, protectTrainer } = require("../middleware/authMiddleware");
 
