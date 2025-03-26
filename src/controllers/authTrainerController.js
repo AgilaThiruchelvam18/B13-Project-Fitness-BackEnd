@@ -35,7 +35,7 @@ exports.register = async (req, res) => {
     // Hash password
     const salt = await bcrypt.genSalt(10);
     const hashedPassword = await bcrypt.hash(password, salt);
-
+console.log(req.files);
     let mediaUploads = [];
     if (req.files) {
       mediaUploads = req.files.map((file) => ({
