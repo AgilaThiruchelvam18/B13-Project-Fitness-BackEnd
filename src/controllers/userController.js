@@ -14,11 +14,8 @@ const Class = require("../models/Class.js");
 // };
 exports.getAllClasses = async (req, res) => {
   try {
-    const classes = await Class.find().populate({
-      path: "trainer",
-      select: "name email",
-      options: { strictPopulate: false } // ✅ Prevents errors if trainer is missing
-    });
+    const classes = await Class.find().populate("trainer");
+      
     res.status(200).json(classes);
   } catch (error) {
     res.status(500).json({ message: "Server Error", error: error.message });
