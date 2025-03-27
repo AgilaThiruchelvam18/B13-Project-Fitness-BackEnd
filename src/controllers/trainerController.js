@@ -3,7 +3,9 @@
 
 const Payment = require("../models/Payment");
 const Trainer = require("../models/Trainer");
-
+const Class = require("../models/Class.js");
+// const Trainer = require("../models/Trainer.js");
+// const User = require("../models/User");
 exports.manageSchedule = async (req, res) => {
   try {
     const trainer = await Trainer.findByIdAndUpdate(req.user.id, { schedule: req.body.schedule }, { new: true });
@@ -98,4 +100,23 @@ exports.deleteTrainer = async (req, res) => {
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
+};
+
+exports.statusUpdate = async (req, res) => {
+try {
+  const updatedClass = await Class.findByIdAndUpdate(
+    req.params.classId,
+    { status: "Completed" },
+    { new: true }
+  );
+
+  if (!updatedClass) {
+    return res.status(404).json({ message: "Class not found" });
+  }
+
+  res.json({ message: "Class marked as completed", updatedClass });
+} catch (error) {
+  console.error("Error updating class:", error);
+  res.status(500).json({ message: "Server error" });
+}
 };
