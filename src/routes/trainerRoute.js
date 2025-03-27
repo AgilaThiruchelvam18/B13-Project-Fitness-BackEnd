@@ -30,7 +30,7 @@ router.delete("/:id", deleteTrainer);
 router.put("/profile", protectTrainer, updateProfile);
 router.get("/earnings", protectTrainer, getEarnings);
 // router.get("/overview", protectTrainer, getTrainerOverview);
-router.put("/schedule/:classId/complete", protectTrainer, statusUpdate);
+router.put("/schedule/:classId", protectTrainer, statusUpdate);
 
 module.exports = router;
 
