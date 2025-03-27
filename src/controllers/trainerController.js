@@ -46,14 +46,15 @@ exports.getAllTrainers = async (req, res) => {
 // Get a single trainer
 exports.getTrainerById = async (req, res) => {
   try {
-    const trainer = await Trainer.findById(req.params.id).populate({
-      path: "classes",
-      populate: {
-        path: "reviews.user", // Populate user inside reviews
-        model: "User", // Ensure it refers to the correct model
-        select: "userName email", // Optional: Select only required fields
-      },
-    });
+    const trainer = await Trainer.findById(req.params.id).populate("classes");
+    // .populate({
+    //   path: "classes",
+    //   populate: {
+    //     path: "reviews.user", // Populate user inside reviews
+    //     model: "User", // Ensure it refers to the correct model
+    //     select: "userName email", // Optional: Select only required fields
+    //   },
+    // });
     if (!trainer) return res.status(404).json({ message: "Trainer not found" });
     res.status(200).json(trainer);
   } catch (error) {
