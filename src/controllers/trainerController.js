@@ -1,6 +1,6 @@
 
 // import Trainer from "../models/Trainer";
-
+const Booking = require("../models/Booking"); 
 const Payment = require("../models/Payment");
 const Trainer = require("../models/Trainer");
 const Class = require("../models/Class.js");
@@ -102,21 +102,25 @@ exports.deleteTrainer = async (req, res) => {
   }
 };
 
+// Make sure to import Booking
+
 exports.statusUpdate = async (req, res) => {
-try {
-  const updatedClass = await Class.findByIdAndUpdate(
-    req.params.classId,
-    { status: "Completed" },
-    { new: true }
-  );
+  try {
+    console.log("Received request to update booking status:", req.params.classId);
 
-  if (!updatedClass) {
-    return res.status(404).json({ message: "Class not found" });
+    const updatedBooking = await Booking.findOneAndUpdate(
+      { classId: req.params.classId },  // Find the booking by classId
+      { status: "Completed" },  // Update status
+      { new: true }  // Return updated document
+    );
+
+    if (!updatedBooking) {
+      return res.status(404).json({ message: "Booking not found" });
+    }
+
+    res.json({ message: "Booking marked as completed", updatedBooking });
+  } catch (error) {
+    console.error("Error updating booking status:", error);
+    res.status(500).json({ message: "Server error" });
   }
-
-  res.json({ message: "Class marked as completed", updatedClass });
-} catch (error) {
-  console.error("Error updating class:", error);
-  res.status(500).json({ message: "Server error" });
-}
 };
