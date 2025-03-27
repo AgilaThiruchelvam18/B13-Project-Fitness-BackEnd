@@ -17,7 +17,7 @@ const transporter = nodemailer.createTransport({
 // ✅ Create a new booking with email notification
 exports.createBooking = async (req, res) => {
   try {
-    const { classId, trainerId, category, price } = req.body;
+    const { classId, trainerId, category, price, bookingDate, bookingStartTime, bookingEndTime } = req.body;
 
     if (!classId || !trainerId || !category || !price) {
       return res.status(400).json({ message: "All fields are required" });
@@ -51,6 +51,7 @@ exports.createBooking = async (req, res) => {
       category,
       price,
       status: "Booked",
+     bookingDate, bookingStartTime, bookingEndTime
     });
 
     await newBooking.save();
@@ -69,6 +70,9 @@ exports.createBooking = async (req, res) => {
         <p><strong>Category:</strong> ${selectedClass.category}</p>
         <p><strong>Duration:</strong> ${selectedClass.duration} mins</p>
         <p><strong>Price:</strong> $${selectedClass.price}</p>
+          <p><strong>bookingDate:</strong> ${selectedClass.bookingDate} mins</p>
+        <p><strong>StartTime:</strong> $${selectedClass.bookingStartTime}</p>
+                <p><strong>EndTime:</strong> $${selectedClass.bookingEndTime}</p>
         <p>See you soon! 💪</p>
         <br />
         <p>Best Regards,<br />Fitness Hub Team</p>
@@ -83,7 +87,7 @@ exports.createBooking = async (req, res) => {
       }
     });
 
-    res.status(201).json({ message: "Booking successful. Confirmation email sent.", booking: newBooking });
+    res.status(201).json({ message: "Booking successful. Confirmation email sent.Visit My Bookings for making Payment and View Details", booking: newBooking });
   } catch (error) {
     console.error("Booking Error:", error);
     res.status(500).json({ message: "Internal Server Error" });

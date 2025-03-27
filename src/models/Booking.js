@@ -9,6 +9,9 @@ const bookingSchema = new mongoose.Schema(
     price: { type: Number, required: true }, // Price of the class
     status: { type: String, enum: ["Booked", "Cancelled", "Completed"], default: "Booked" }, // Booking status
     paymentStatus: { type: String, enum: ["Pending", "Paid", "Failed"], default: "Pending" },
+    bookingDate: { type: String }, // "YYYY-MM-DD"
+    bookingStartTime: { type: String }, // "08:00 AM"
+    bookingEndTime: { type: String } // "09:00 AM"
   },
   { timestamps: true }
 );
