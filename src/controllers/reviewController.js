@@ -1,18 +1,18 @@
 const Review = require("../models/Review");
 const Booking = require("../models/Booking");
 const Trainer = require("../models/Trainer");
-
-// ✅ Get all reviews for a logged-in user
-// exports.getReviews = async (req, res) => {
-//   try {
-//     const trainer = await Trainer.findById(trainerId);
-//     if (!trainer) return res.status(404).json({ message: "Trainer not found" });
-//     const reviews = await Review.find({ userId: req.user._id });
-//     res.status(200).json(reviews);
-//   } catch (error) {
-//     res.status(500).json({ message: "Error fetching reviews", error });
-//   }
-// };
+// const Trainer = require("../models/Trainer");
+const User = require("../models/User");
+exports.getReviews = async (req, res) => {
+  try {
+    const user = await User.findById(req.user._id);
+    if (!user) return res.status(404).json({ message: "user not found" });
+    const reviews = await Review.find({ user: req.user._id });
+    res.status(200).json(reviews);
+  } catch (error) {
+    res.status(500).json({ message: "Error fetching reviews", error });
+  }
+};
 exports.createReview = async (req, res) => {
   try {
     const { trainerId, bookingId, rating, comment } = req.body;
