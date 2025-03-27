@@ -9,5 +9,5 @@ router.post("/",protectCustomer, bookingController.createBooking);
 router.put("/:id/cancel", protectCustomer, bookingController.cancelBooking);
 // router.delete("/:id",protectCustomer,  bookingController.cancelBooking);
 router.get("/", protectCustomer, bookingController.getBookings);
-
+router.put("/bookings/:id/update", protectCustomer, bookingController.bookingUpdate);
 module.exports = router;

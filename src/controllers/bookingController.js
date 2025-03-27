@@ -154,3 +154,23 @@ exports.cancelBooking = async (req, res) => {
     res.status(500).json({ message: "Server error" });
   }
 };
+
+exports.bookingUpdate = async (req, res) => {
+  try {
+    const { bookingDate, bookingStartTime, bookingEndTime} = req.body;
+
+    const updatedBooking = await Booking.findByIdAndUpdate(
+      req.params.id,
+      { bookingDate, bookingStartTime, bookingEndTime},
+      { new: true }
+    );
+
+    if (!updatedBooking) {
+      return res.status(404).json({ message: "Booking not found" });
+    }
+
+    res.json({ message: "Booking updated successfully", updatedBooking });
+  } catch (error) {
+    res.status(500).json({ message: "Error updating booking", error });
+  }
+};
