@@ -36,9 +36,10 @@ exports.createReview = async (req, res) => {
     // Push review to trainer's reviews array
     trainer.reviews.push(newReview);
     trainer.ratings.totalReviews += 1;
-      trainer.ratings.averageRating =
-    (trainer.ratings.averageRating + rating) /
-          trainer.ratings.totalReviews
+    trainer.ratings.averageRating = (
+      (trainer.ratings.averageRating + rating) / trainer.ratings.totalReviews
+    ).toFixed(2);
+    
       
     await trainer.save();
 
